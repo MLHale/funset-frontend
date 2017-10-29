@@ -5,7 +5,7 @@ module.exports = function(environment) {
   let ENV = {
     modulePrefix: 'pathway-viz-frontend',
     environment,
-    rootURL: '/static/ember/',
+    rootURL: '/',
     bURL: '/',
     locationType: 'auto',
     EmberENV: {
