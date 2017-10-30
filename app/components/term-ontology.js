@@ -19,10 +19,29 @@ export default Component.extend({
   //  [ {value: Number, timestamp: Number } ];
   canvas: null,
 
-
+  nodes: [
+    {id: "GO:000001", group: 1},
+    {id: "GO:000002", group: 1},
+    {id: "GO:000003", group: 1},
+    {id: "GO:000004", group: 1},
+    {id: "GO:000005", group: 1},
+  ],
+  links: [
+    {source: "GO:000001", target: "GO:000002", type:"dotted", value: 1},
+    {source: "GO:000001", target: "GO:000003", type:"dotted", value: 1},
+    {source: "GO:000001", target: "GO:000004", type:"dotted", value: 1},
+    {source: "GO:000001", target: "GO:000005", type:"dotted", value: 1},
+    {source: "GO:000002", target: "GO:000003", type:"solid", value: 1},
+  ],
   updateNodes: Ember.observer('nodes.@each', function(){
-    this.forceGraph();
+    console.log('refershing graph')
+    this.forceGraph().get('addNode')('test');
   }),
+
+  // updateNodes: Ember.observer('links.@each', function(){
+  //   console.log('refershing graph')
+  //   this.forceGraph().addLink;
+  // }),
 
   didReceiveAttrs() {
     // Schedule a call to our the render method
@@ -32,6 +51,9 @@ export default Component.extend({
 
     // Add and remove elements on the graph object
     this.addNode = function (id) {
+      console.log('addnode');
+      console.log(id)
+
         nodes.push({"id":id});
         update();
     }

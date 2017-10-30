@@ -24,22 +24,22 @@ export default Controller.extend({
       let node = queue.popObject();
       // console.log(node);
       var term = this.store.peekRecord('term',node.id);
-      console.log('Adding Term')
-      console.log(term);
+      // console.log('Adding Term')
+      // console.log(term);
       this.get('nodes').addObject({id: term.get('termid'), group: 'terms'});
       if(term.get('parents.length')>0){
         //if the object has parents, retrieve them and add them to the graph
-        console.log('Adding Parents')
+        // console.log('Adding Parents')
         term.get('parents').forEach(function(parent){
-          console.log('Adding Parents - for')
-          console.log(parent.id);
+          // console.log('Adding Parents - for')
+          // console.log(parent.id);
           var _this = this;
           this.store.findRecord('term',parent.id).then(function(result){
             var parentterm = _this.store.peekRecord('term',parent.id);
             console.log('Adding Parent')
-            console.log(parentterm);
+            console.log(parentterm.get('termid'));
             _this.get('nodes').addObject({id: parentterm.get('termid'), group: 'terms'});//add parent node to graph
-            _this.get('links').addObject({source: term.get('termid'), target:parentterm.get('termid'), type: 'dotted'});//add edge between term and its parent
+            // _this.get('links').addObject({source: term.get('termid'), target:parentterm.get('termid'), type: 'dotted', value: 1});//add edge between term and its parent
           });
 
         }, this);
