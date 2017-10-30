@@ -16,24 +16,34 @@ export default Controller.extend({
   //   {source: "GO:000001", target: "GO:000005", type:"dotted", value: 1},
   //   {source: "GO:000002", target: "GO:000003", type:"solid", value: 1},
   // ],
-  nodes:[],
-  links:[],
+  nodes: Ember.ArrayProxy.create({content: Ember.A([])}),
+  links: Ember.ArrayProxy.create({content: Ember.A([])}),
   processQueue: Ember.observer('route.loadingqueue.@each', function(){
     var queue = this.get('route.loadingqueue');
     if(queue.content.length > 0){
       let node = queue.popObject();
-      console.log(node);
-      this.get('nodes').addObject({id: node._data.termid, group: 1});
-      if(node.get('parents')){
-        node.get('parents').forEach(function(parent){
-          this.get('links').addObject({source: node.termid,target:parent.get('termid')})
-        });
+      // console.log(node);
+      var term = this.store.peekRecord('term',node.id);
+      console.log('Adding Term')
+      console.log(term);
+      this.get('nodes').addObject({id: term.get('termid'), group: 'terms'});
+      if(term.get('parents.length')>0){
+        //if the object has parents, retrieve them and add them to the graph
+        console.log('Adding Parents')
+        term.get('parents').forEach(function(parent){
+          console.log('Adding Parents - for')
+          console.log(parent.id);
+          var _this = this;
+          this.store.findRecord('term',parent.id).then(function(result){
+            var parentterm = _this.store.peekRecord('term',parent.id);
+            console.log('Adding Parent')
+            console.log(parentterm);
+            _this.get('nodes').addObject({id: parentterm.get('termid'), group: 'terms'});//add parent node to graph
+            _this.get('links').addObject({source: term.get('termid'), target:parentterm.get('termid'), type: 'dotted'});//add edge between term and its parent
+          });
+
+        }, this);
       }
     }
   }),
-  actions:{
-    addItem(){
-      this.get('nodes').addObject({id: "GO:000002", group: 1});
-    }
-  }
 });
