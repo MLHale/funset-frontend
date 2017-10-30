@@ -39,7 +39,7 @@ export default Controller.extend({
             console.log('Adding Parent')
             console.log(parentterm.get('termid'));
             _this.get('nodes').addObject({id: parentterm.get('termid'), group: 'terms'});//add parent node to graph
-            // _this.get('links').addObject({source: term.get('termid'), target:parentterm.get('termid'), type: 'dotted', value: 1});//add edge between term and its parent
+            _this.get('links').addObject({source: term.get('termid'), target:parentterm.get('termid'), type: 'dotted', value: 1});//add edge between term and its parent
           });
 
         }, this);
