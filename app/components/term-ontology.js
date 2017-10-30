@@ -10,12 +10,12 @@ export default Component.extend({
   tagName: 'svg',
   classNames: ['awesome-d3-widget'],
 
-  width: 1000,
+  width: 2000,
   height: 1000,
   noderadius: 8,
   simulationdistance: 100,
   simulationstrength: 1,
-  simulationrepulsiveforce: -50,
+  simulationrepulsiveforce: -30,
 
   attributeBindings: ['width', 'height'],
 
@@ -40,25 +40,34 @@ export default Component.extend({
   //   {source: "GO:000001", target: "GO:000005", type:"dotted", value: 1},
   //   {source: "GO:000002", target: "GO:000003", type:"solid", value: 1},
   // ],
+  updating: false,
   updateNodes: Ember.observer('nodestobeadded.@each', function(){
     var context = this;
-    console.log('refreshing');
-    this.get('nodestobeadded').forEach(function(node){
-      context.get('_nodes').addObject(node);
-      context.get('nodestobeadded').removeObject(node);
-    });
-    this.update()
+    if(this.get('nodestobeadded.length')>0){
+      this.get('nodestobeadded').forEach(function(node){
+        context.get('_nodes').addObject(node);
+        context.get('nodestobeadded').removeObject(node);
+      });
+      if(!context.get('updating')) {
+        context.set('updating', true);
+        Ember.run.scheduleOnce('render', this, this.update);
+      }
+    }
     // Ember.run.scheduleOnce('render', this, this.update);
     // this.addNode();
   }),
   updateLinks: Ember.observer('linkstobeadded.@each', function(){
     var context = this;
-    console.log('refreshing');
-    this.get('linkstobeadded').forEach(function(link){
-      context.get('_links').addObject(link);
-      context.get('linkstobeadded').removeObject(link);
-    });
-    this.update();
+    if(this.get('linkstobeadded.length')>0){
+      this.get('linkstobeadded').forEach(function(link){
+        context.get('_links').addObject(link);
+        context.get('linkstobeadded').removeObject(link);
+      });
+      if(!context.get('updating')) {
+        context.set('updating', true);
+        Ember.run.scheduleOnce('afterRender', this, this.update);
+      }
+    }
   }),
 
 
@@ -93,6 +102,7 @@ export default Component.extend({
 
     //setup simulation forces (how the graph moves)
     var simulation = d3.forceSimulation()
+        .alphaMin(0.001)
         // .force("link", d3.forceLink().id(function(d) { return d.id; }).distance(context.get('simulationdistance')).strength(context.get('simulationstrength')))
         .force("charge", d3.forceManyBody().strength(function (d) {return context.get('simulationrepulsiveforce')}))
         .force("center", d3.forceCenter(width / 2, height / 2))
@@ -159,12 +169,12 @@ export default Component.extend({
             .on("end", (d, i) => context.dragended(d, i, context)));
 
     //update text labels, each node should have a label corresponding to its id
-    var text_objects = textlayer.selectAll("g").data(graph.nodes, function(d) { return d.id;})
-    text_objects.enter().append("svg:text")
-      .attr("x", 8)
-      .attr("y", ".31em")
-      .text(function(d) { return d.id; });
-    text_objects.exit().remove();
+    // var text_objects = textlayer.selectAll("g").data(graph.nodes, function(d) { return d.id;})
+    // text_objects.enter().append("svg:text")
+    //   .attr("x", 8)
+    //   .attr("y", ".31em")
+    //   .text(function(d) { return d.id; });
+    // text_objects.exit().remove();
 
     // Restart the force layout.
     // simulation.alpha(1).restart();
@@ -179,7 +189,7 @@ export default Component.extend({
       .strength(function (d) {return context.get('simulationstrength')}));
 
     console.log('Update Finished');
-    console.log(Ember.run.queues);
+    this.set('updating', false);
     // Ember.run.scheduleOnce('render', this, this.update);
   },
   dragstarted (d, i, context) {

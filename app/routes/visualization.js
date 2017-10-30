@@ -10,7 +10,7 @@ export default Route.extend({
       _this.set('pages',result.data.pages);
       if (result.data.pages >= 1){
         // for (var i = 1; i <= result.data.pages; i++) {
-        for (var i = 1; i <= 1; i++) {//get 100 terms
+        for (var i = 1; i <= 3; i++) {//get 100 terms
             _this.store.query('term', {page: i}).then(function(pageresults){
               _this.get('loadingqueue').pushObjects(pageresults.content);
             });
