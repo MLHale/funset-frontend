@@ -1,13 +1,13 @@
-.links line {
+.link-layer line {
   stroke: #aaa;
   stroke-width: 1.5px;
 }
 
-.links line.dotted {
+.link-layer line.dotted {
   stroke-dasharray: 5;
 }
 
-.nodes circle {
+.node-layer circle {
   pointer-events: all;
   stroke: none;
   stroke-width: 40px;

@@ -12,13 +12,20 @@ export default Component.extend({
 
   width: 1000,
   height: 1000,
+  noderadius: 8,
+  simulationdistance: 100,
+  simulationstrength: 1,
+  simulationrepulsiveforce: -50,
 
   attributeBindings: ['width', 'height'],
 
   // Array of points to render as circles in a line, spaced by time.
   //  [ {value: Number, timestamp: Number } ];
   canvas: null,
-
+  _nodes: Ember.ArrayProxy.create({content: Ember.A()}),
+  nodes: Ember.computed.alias('_nodes.content'),
+  _links: Ember.ArrayProxy.create({content: Ember.A()}),
+  links: Ember.computed.alias('_links.content'),
   // nodes: [
   //   {id: "GO:000001", group: 1},
   //   {id: "GO:000002", group: 1},
@@ -33,12 +40,24 @@ export default Component.extend({
   //   {source: "GO:000001", target: "GO:000005", type:"dotted", value: 1},
   //   {source: "GO:000002", target: "GO:000003", type:"solid", value: 1},
   // ],
-  updateNodes: Ember.observer('nodes.@each', function(){
-    console.log('refershing graph')
-    this.update();
+  updateNodes: Ember.observer('nodestobeadded.@each', function(){
+    var context = this;
+    console.log('refreshing');
+    this.get('nodestobeadded').forEach(function(node){
+      context.get('_nodes').addObject(node);
+      context.get('nodestobeadded').removeObject(node);
+    });
+    this.update()
+    // Ember.run.scheduleOnce('render', this, this.update);
+    // this.addNode();
   }),
-  updateLinks: Ember.observer('links.@each', function(){
-    console.log('refershing graph')
+  updateLinks: Ember.observer('linkstobeadded.@each', function(){
+    var context = this;
+    console.log('refreshing');
+    this.get('linkstobeadded').forEach(function(link){
+      context.get('_links').addObject(link);
+      context.get('linkstobeadded').removeObject(link);
+    });
     this.update();
   }),
 
@@ -47,25 +66,52 @@ export default Component.extend({
   //   console.log('refershing graph')
   //   this.forceGraph().addLink;
   // }),
+  simulationticked(){
+    var radius = this.get('noderadius');
+    var width = this.get('width')-95;
+    var height = this.get('height');
+    this.get('linklayer').selectAll('line').attr("x1", function(d) { return Math.max(radius, Math.min(width - radius, d.source.x)); })
+        .attr("y1", function(d) { return Math.max(radius, Math.min(height - radius, d.source.y)); })
+        .attr("x2", function(d) { return Math.max(radius, Math.min(width - radius, d.target.x)); })
+        .attr("y2", function(d) { return Math.max(radius, Math.min(height - radius, d.target.y)); });
 
+    this.get('nodelayer').selectAll("circle")
+        .attr("cx", function(d) { return Math.max(radius, Math.min(width - radius, d.x));  })
+        .attr("cy", function(d) { return Math.max(radius, Math.min(height - radius, d.y)); });
+
+    this.get('textlayer').selectAll('text').attr("transform", function(d) {
+      return "translate(" + Math.max(radius, Math.min(width - radius, d.x)) + "," + Math.max(radius, Math.min(height - radius, d.y)) + ")";
+    });
+  },
   didInsertElement() {
 
     var svg = d3.select("svg"),
         width = +svg.attr("width"),
         height = +svg.attr("height");
 
-    this.set('svg', svg);
-    var simulation = d3.forceSimulation()
-        .force("link", d3.forceLink().id(function(d) { return d.id; }).distance(100).strength(1))
-        .force("charge", d3.forceManyBody())
-        .force("center", d3.forceCenter(width / 2, height / 2));
+    var context = this;
 
+    //setup simulation forces (how the graph moves)
+    var simulation = d3.forceSimulation()
+        // .force("link", d3.forceLink().id(function(d) { return d.id; }).distance(context.get('simulationdistance')).strength(context.get('simulationstrength')))
+        .force("charge", d3.forceManyBody().strength(function (d) {return context.get('simulationrepulsiveforce')}))
+        .force("center", d3.forceCenter(width / 2, height / 2))
+        .on("tick", ()=> Ember.run.scheduleOnce('render', context, context.simulationticked));
     this.set('simulation', simulation);
 
 
+    var markerlayer = svg.append("g").attr("class", "marker-layer")
 
+    this.set('markerlayer', markerlayer);
 
+    var linklayer = svg.append("g").attr("class", "link-layer");
+    this.set('linklayer', linklayer);
 
+    var nodelayer = svg.append("g").attr("class", "node-layer");
+    this.set('nodelayer', nodelayer);
+
+    var textlayer = svg.append("g").attr("class", "text-layer")
+    this.set('textlayer', textlayer);
     // Schedule a call to our the render method
     Ember.run.scheduleOnce('render', this, this.update);
   },
@@ -74,14 +120,16 @@ export default Component.extend({
     var simulation = this.get('simulation');
     var context = this;
 
+    var markerlayer = this.get('markerlayer');
+    var linklayer = this.get('linklayer');
+    var nodelayer = this.get('nodelayer');
+    var textlayer = this.get('textlayer');
+
     var graph = {nodes: this.get('nodes'), links: this.get('links')};
-    var nodes = simulation.nodes(graph.nodes)
-    var links = simulation.force("link").links(graph.links);
 
     //setup the marker layer (arrowheads)
-    var marker = svg.append("g").attr("class", "markers").selectAll("marker")
-        .data(["dotted", "solid"])
-      .enter().append("svg:marker")
+    var marker_objects = markerlayer.selectAll("marker").data(["dotted", "solid"]);
+    marker_objects.enter().append("marker")
         .attr("id", String)
         .attr("viewBox", "0 -5 10 10")
         .attr("refX", 12)
@@ -91,61 +139,48 @@ export default Component.extend({
       .append("svg:path")
         .attr("d", "M0,-5L10,0L0,5");
 
-    marker.exit().remove();
+    marker_objects.exit().remove();
+    //
     //Setup edges and draw them on the graph - attaching a new svg line for each edge
-    var link = svg.append("g").attr("class", "links").selectAll("line")
-      .data(graph.links)
-      .enter().append("line")
+    var link_objects = linklayer.selectAll("line").data(graph.links);
+    link_objects.enter().append("line")
       .attr("class", function(d) { return "link " + d.type; })
       .attr("marker-end", function(d) { return "url(#" + d.type + ")"; });
 
-    // link.enter().insert("line")
-    //     .attr("class", "link");
+    link_objects.exit().remove();
 
-    link.exit().remove();
-
-    //Setup nodes in the graph, entering a new svg line for each node. r is the radius of the node. Each node also has a handler for drag events
-    var node = svg.append("g").attr("class", "nodes").selectAll("circle").data(graph.nodes, function(d) { return d.id;}).enter().append("circle")
-        .attr("r", 8)
+    //update nodes in the graph, entering a new svg circle of radius r for each node. Each node also has a handler for drag events
+    var node_objects= nodelayer.selectAll("circle").data(graph.nodes, function(d) { return d.id;});
+    node_objects.exit().remove();
+    node_objects.enter().append("circle").attr("r", this.get('noderadius'))
         .call(d3.drag()
-            .on("start", (d, i) => context.dragstarted(d,i, context))
-            .on("drag", (d, i) => context.dragged(d,i, context))
-            .on("end", (d, i) => context.dragended(d,i, context)));
+            .on("start", (d, i) => context.dragstarted(d, i, context))
+            .on("drag", (d, i) => context.dragged(d, i, context))
+            .on("end", (d, i) => context.dragended(d, i, context)));
 
-    //Add text labels corresponding to the node id
-    var text = svg.append("g").attr("class", "text").selectAll("g")
-        .data(graph.nodes, function(d) { return d.id;})
-      .enter().append("svg:g");
-
-    text.append("svg:text")
-      .attr("x", 8)
-      .attr("y", ".31em")
-      .attr("class", "shadow")
-      .text(function(d) { return d.id; });
-
-    text.append("svg:text")
+    //update text labels, each node should have a label corresponding to its id
+    var text_objects = textlayer.selectAll("g").data(graph.nodes, function(d) { return d.id;})
+    text_objects.enter().append("svg:text")
       .attr("x", 8)
       .attr("y", ".31em")
       .text(function(d) { return d.id; });
-
-    node.exit().remove();
-
-    simulation.on("tick", function() {
-      link.attr("x1", function(d) { return d.source.x; })
-          .attr("y1", function(d) { return d.source.y; })
-          .attr("x2", function(d) { return d.target.x; })
-          .attr("y2", function(d) { return d.target.y; });
-
-      node
-          .attr("cx", function(d) { return d.x; })
-          .attr("cy", function(d) { return d.y; });
-      text.attr("transform", function(d) {
-        return "translate(" + d.x + "," + d.y + ")";
-      });
-    });
+    text_objects.exit().remove();
 
     // Restart the force layout.
-    simulation.tick();
+    // simulation.alpha(1).restart();
+    // this.set('simulation', simulation);
+
+    //update nodes and link data in the simulation
+    var nodes = simulation.nodes(graph.nodes);
+    var links = simulation.force("link", d3.forceLink()
+      .links(graph.links)
+      .id(function(d) { return d.id; })
+      .distance(context.get('simulationdistance'))
+      .strength(function (d) {return context.get('simulationstrength')}));
+
+    console.log('Update Finished');
+    console.log(Ember.run.queues);
+    // Ember.run.scheduleOnce('render', this, this.update);
   },
   dragstarted (d, i, context) {
     //log starting position on element d when acted upon by a d3 event
@@ -178,12 +213,11 @@ export default Component.extend({
     }
   },
   // Add and remove elements on the graph object
-  addNode (id) {
+  addNode (node) {
     // console.log('addnode');
     // console.log(id);
 
-    this.get('nodes').push({"id":id});
-    this.update();
+    this.get('nodes').push(node);
   },
   removeNode (id) {
     var nodes = this.get('nodes');

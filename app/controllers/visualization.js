@@ -36,8 +36,8 @@ export default Controller.extend({
           var _this = this;
           this.store.findRecord('term',parent.id).then(function(result){
             var parentterm = _this.store.peekRecord('term',parent.id);
-            console.log('Adding Parent')
-            console.log(parentterm.get('termid'));
+            // console.log('Adding Parent')
+            // console.log(parentterm.get('termid'));
             _this.get('nodes').addObject({id: parentterm.get('termid'), group: 'terms'});//add parent node to graph
             _this.get('links').addObject({source: term.get('termid'), target:parentterm.get('termid'), type: 'dotted', value: 1});//add edge between term and its parent
           });
@@ -46,4 +46,9 @@ export default Controller.extend({
       }
     }
   }),
+  actions: {
+    addNode(id){
+      this.set('test','test');
+    }
+  }
 });
