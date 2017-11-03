@@ -1,6 +1,6 @@
 <div class="layout-row layout-sm-column">
-  {{#paper-card class="flex" as |card|}}
-    {{#card.content class="layout-row layout-align-space-between"}}
+  {{#paper-card class="flex term-ontology-card" as |card|}}
+    {{#card.content class="layout-row layout-align-space-between flex-100 term-ontology-graph-container"}}
       {{term-ontology nodestobeadded=nodes.content linkstobeadded=links test=test labels=showTermLabels linkforce=linkForce}}
     {{/card.content}}
   {{/paper-card}}

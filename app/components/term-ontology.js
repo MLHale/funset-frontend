@@ -4,8 +4,9 @@ import Component from '@ember/component';
 
 import Ember from 'ember'
 import d3 from 'npm:d3'
+import ResizeAware from 'ember-resize/mixins/resize-aware';
 
-export default Component.extend({
+export default Component.extend(ResizeAware,{
 
   tagName: 'svg',
   classNames: ['term-ontology-graph'],
@@ -100,11 +101,18 @@ export default Component.extend({
         text_objects.exit().remove();
     }
   },
+  didResize(event){
+    console.log(`Window resized: width: ${window.innerWidth}, height: ${window.innerHeight}`);
+    var svg = d3.select("svg");
+    var width = this.set('width',this.$().parents('md-card-content').width());
+    var height = this.set('height',this.$().parents('md-card-content').height());
+    console.log(`New SVG size: width: ${width}, height: ${height}`);
+    svg.attr("width", width);
+    svg.attr("height", height);
+    this.simulationticked();
+  },
 
-  // updateNodes: Ember.observer('links.@each', function(){
-  //   console.log('refershing graph')
-  //   this.forceGraph().addLink;
-  // }),
+
   simulationticked(){
     var radius = this.get('noderadius');
     var width = this.get('width');
@@ -123,12 +131,14 @@ export default Component.extend({
     });
   },
   didInsertElement() {
-    console.log(this.element);
-    var svg = d3.select("svg"),
-        width = +svg.attr("width"),
-        height = +svg.attr("height");
-
     var context = this;
+    this.get('resizeService').on('debouncedDidResize', event => context.didResize(event, context));//register component resize event handler
+    var width = this.set('width',this.$().parents('md-card-content').width());
+    var height = this.set('height',this.$().parents('md-card-content').height());
+    var svg = d3.select("svg");
+    svg.attr("width", this.get('width'));
+    svg.attr("height", this.get('width'));
+
 
     //setup simulation forces (how the graph moves)
     var simulation = d3.forceSimulation()
