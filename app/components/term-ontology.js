@@ -137,28 +137,46 @@ export default Component.extend(ResizeAware,{
     var radius = this.get('noderadius');
     var width = this.get('width');
     var height = this.get('height');
-    this.get('linklayer').selectAll('line').attr("x1", function(d) { return Math.max(radius, Math.min(width - radius, d.source.x)); })
-        .attr("y1", function(d) { return Math.max(radius, Math.min(height - radius, d.source.y)); })
-        .attr("x2", function(d) { return Math.max(radius, Math.min(width - radius, d.target.x)); })
-        .attr("y2", function(d) { return Math.max(radius, Math.min(height - radius, d.target.y)); });
+    this.get('linklayer').selectAll('line').attr("x1", function(d) { return d.source.x; })
+        .attr("y1", function(d) { return d.source.y; })
+        .attr("x2", function(d) { return d.target.x; })
+        .attr("y2", function(d) { return d.target.y; });
 
     this.get('nodelayer').selectAll("circle")
-        .attr("cx", function(d) { return Math.max(radius, Math.min(width - radius, d.x));  })
-        .attr("cy", function(d) { return Math.max(radius, Math.min(height - radius, d.y)); });
+        .attr("cx", function(d) { return d.x;  })
+        .attr("cy", function(d) { return d.y; });
 
     this.get('textlayer').selectAll('text').attr("transform", function(d) {
-      return "translate(" + Math.max(radius, Math.min(width - radius, d.x)) + "," + Math.max(radius, Math.min(height - radius, d.y)) + ")";
+      return "translate(" + d.x + "," + d.y + ")";
     });
+  },
+  zoomed() {
+    // create new scale ojects based on event
+      var new_xScale = d3.event.transform.rescaleX(this.get('xAxisScale'));
+      var new_yScale = d3.event.transform.rescaleY(this.get('yAxisScale'));
+      // console.log(d3.event.transform);
+
+      // update axes
+      this.get('xaxislayer').call(this.get('xAxis').scale(new_xScale));
+      this.get('yaxislayer').call(this.get('yAxis').scale(new_yScale));
+
+      // update node zoom
+      this.get('nodelayer').selectAll('circle').attr("transform", d3.event.transform);
+      this.get('linklayer').selectAll('line').attr("transform", d3.event.transform);
   },
   didInsertElement() {
     var context = this;
     this.get('resizeService').on('debouncedDidResize', event => context.didResize(event, context));//register component resize event handler
     var width = this.set('width',this.$().parents('md-card-content').width());
     var height = this.set('height',this.$().parents('md-card-content').height());
+
+    var zoom = d3.zoom()
+        .on("zoom", ()=>context.zoomed(context));
+
     var svg = d3.select("svg");
     svg.attr("width", this.get('width'));
     svg.attr("height", this.get('width'));
-
+    svg.call(zoom);
 
     //setup simulation forces (how the graph moves)
     var simulation = d3.forceSimulation()
@@ -170,6 +188,34 @@ export default Component.extend(ResizeAware,{
         .on("tick", ()=> Ember.run.scheduleOnce('render', context, context.simulationticked));
     this.set('simulation', simulation);
 
+    // create scale objects
+    var xAxisScale = this.set('xAxisScale', d3.scaleLinear()
+      .domain([-width/2,width/2])
+      .range([0,width]));
+
+    var yAxisScale = this.set('yAxisScale', d3.scaleLinear()
+      .domain([-height/2,height/2])
+      .range([height,0]));
+
+    // create axis objects
+    var xAxis = this.set('xAxis', d3.axisBottom(xAxisScale));
+    var yAxis = this.set('yAxis', d3.axisLeft(yAxisScale));
+    // Draw Axis
+    var xaxislayer = this.set('xaxislayer',svg.append("g")
+        .attr("class", "axis xaxis-layer")
+        .attr("transform", "translate(40," + 0+ ")")
+        .call(xAxis));
+
+    var yaxislayer = this.set('yaxislayer', svg.append("g")
+        .attr("class", "axis yaxis-layer")
+        .attr("transform", "translate(40," + 0+ ")")
+        .call(yAxis));
+
+    var zoomview = svg.append("rect")
+      .attr("class", "zoom")
+      .attr("width", width)
+      .attr("height", height)
+      .call(zoom);
 
     var markerlayer = svg.append("g").attr("class", "marker-layer")
 
