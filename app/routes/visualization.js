@@ -1,11 +1,12 @@
 import Route from '@ember/routing/route';
 import Ember from 'ember';
+import config from './../config/environment';
 
 export default Route.extend({
   loadingqueue: Ember.ArrayProxy.create({ content: Ember.A() }),
   model(){
     var _this = this;
-    Ember.$.getJSON('http://localhost/api/v1/terms/get_pages').then(function(result){
+    Ember.$.getJSON(config.host+'/api/v1/terms/get_pages').then(function(result){
       _this.set('termcount',result.data.count);
       _this.set('pages',result.data.pages);
       if (result.data.pages >= 1){

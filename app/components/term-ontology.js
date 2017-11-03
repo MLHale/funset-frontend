@@ -16,7 +16,7 @@ export default Component.extend(ResizeAware,{
   noderadius: 8,
   simulationdistance: 100,
   simulationstrength: 1,
-  simulationrepulsiveforce: -50,
+  simulationrepulsiveforce: -10,
 
   attributeBindings: ['width', 'height'],
   labels: false,
@@ -75,13 +75,12 @@ export default Component.extend(ResizeAware,{
     if(!this.get('updating')) {
       this.updateTextLabels(this);
       this.simulationticked(this);
-      //need to add line for links
     }
   }),
   toggleLinkforce: Ember.observer('linkforce', function(){
     if(!this.get('updating')) {
-      this.set('updating', true);
-      this.update(this);
+      // this.set('updating', true);
+      this.updateLinkForces(this);
       this.simulationticked(this);
     }
   }),
@@ -100,6 +99,27 @@ export default Component.extend(ResizeAware,{
         text_objects = textlayer.selectAll("text").data({}, function(d) { return d.id;});
         text_objects.exit().remove();
     }
+  },
+  updateLinkForces(){
+    var context = this;
+    var graph = {nodes: this.get('nodes'), links: this.get('links')};
+    var simulation = this.get('simulation');
+    if(this.get('linkforce')){
+      simulation.alpha(.3);
+      var links = simulation.force("link", d3.forceLink()
+        .links(graph.links)
+        .id(function(d) { return d.id; })
+        .distance(context.get('simulationdistance'))
+        .strength(function (d) {return context.get('simulationstrength')}));
+    }
+    else {
+      var links = simulation.force("link", d3.forceLink()
+        .links(graph.links)
+        .id(function(d) { return d.id; })
+        .distance(function(d) { return Math.pow(Math.pow(d.source.x-d.target.x,2) + Math.pow(d.source.y-d.target.y,2), 1/2) })
+        .strength(function (d) {return context.get('simulationstrength')}));
+    }
+    this.get('simulation', simulation);
   },
   didResize(event){
     console.log(`Window resized: width: ${window.innerWidth}, height: ${window.innerHeight}`);
@@ -146,6 +166,7 @@ export default Component.extend(ResizeAware,{
         // .force("link", d3.forceLink().id(function(d) { return d.id; }).distance(context.get('simulationdistance')).strength(context.get('simulationstrength')))
         .force("charge", d3.forceManyBody().strength(function (d) {return context.get('simulationrepulsiveforce')}))
         // .force("center", d3.forceCenter(width / 2, height / 2))
+        .velocityDecay(.6)
         .on("tick", ()=> Ember.run.scheduleOnce('render', context, context.simulationticked));
     this.set('simulation', simulation);
 
