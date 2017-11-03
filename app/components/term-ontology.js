@@ -70,14 +70,36 @@ export default Component.extend({
       }
     }
   }),
-  refreshState: Ember.observer('labels','linkforce', function(){
-    var context = this;
-    if(!context.get('updating')) {
-      context.set('updating', true);
-      Ember.run.scheduleOnce('afterRender', this, this.update);
+  toggleLabels: Ember.observer('labels', function(){
+    if(!this.get('updating')) {
+      this.updateTextLabels(this);
+      this.simulationticked(this);
+      //need to add line for links
     }
   }),
+  toggleLinkforce: Ember.observer('linkforce', function(){
+    if(!this.get('updating')) {
+      this.set('updating', true);
+      this.update(this);
+      this.simulationticked(this);
+    }
+  }),
+  updateTextLabels(){
+    var graph = {nodes: this.get('nodes'), links: this.get('links')};
+    var textlayer = this.get('textlayer');
+    var text_objects;
+    if(this.get('labels')){
+      text_objects = textlayer.selectAll("text").data(graph.nodes, function(d) { return d.id;});
+      text_objects.enter().append("svg:text")
+        .attr("x", 8)
+        .attr("y", ".31em")
+        .text(function(d) { return d.id; });
 
+    } else{
+        text_objects = textlayer.selectAll("text").data({}, function(d) { return d.id;});
+        text_objects.exit().remove();
+    }
+  },
 
   // updateNodes: Ember.observer('links.@each', function(){
   //   console.log('refershing graph')
