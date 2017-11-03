@@ -26,7 +26,8 @@ export default Controller.extend({
       var term = this.store.peekRecord('term',node.id);
       // console.log('Adding Term')
       // console.log(term);
-      this.get('nodes').addObject({id: term.get('termid'), group: 'terms'});
+      var scalefactor = 1000;
+      this.get('nodes').addObject({id: term.get('termid'), group: 'terms', x: 1500*term.get('semanticdissimilarityx')*scalefactor+scalefactor/2, y: 800*term.get('semanticdissimilarityy')*scalefactor+scalefactor/2});
       if(term.get('parents.length')>0){
         //if the object has parents, retrieve them and add them to the graph
         // console.log('Adding Parents')
@@ -38,7 +39,7 @@ export default Controller.extend({
             var parentterm = _this.store.peekRecord('term',parent.id);
             // console.log('Adding Parent')
             // console.log(parentterm.get('termid'));
-            _this.get('nodes').addObject({id: parentterm.get('termid'), group: 'terms'});//add parent node to graph
+            _this.get('nodes').addObject({id: parentterm.get('termid'), group: 'terms', x: parentterm.get('semanticdissimilarityx')*scalefactor+scalefactor/2, y: parentterm.get('semanticdissimilarityy')*scalefactor+scalefactor/2});//add parent node to graph
             _this.get('links').addObject({source: term.get('termid'), target:parentterm.get('termid'), type: 'dotted', value: 1});//add edge between term and its parent
           });
 

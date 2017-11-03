@@ -10,8 +10,8 @@ export default Component.extend({
   tagName: 'svg',
   classNames: ['awesome-d3-widget'],
 
-  width: 2000,
-  height: 1000,
+  width: 1000,
+  height: 800,
   noderadius: 8,
   simulationdistance: 100,
   simulationstrength: 1,
@@ -105,7 +105,7 @@ export default Component.extend({
         .alphaMin(0.001)
         // .force("link", d3.forceLink().id(function(d) { return d.id; }).distance(context.get('simulationdistance')).strength(context.get('simulationstrength')))
         .force("charge", d3.forceManyBody().strength(function (d) {return context.get('simulationrepulsiveforce')}))
-        .force("center", d3.forceCenter(width / 2, height / 2))
+        // .force("center", d3.forceCenter(width / 2, height / 2))
         .on("tick", ()=> Ember.run.scheduleOnce('render', context, context.simulationticked));
     this.set('simulation', simulation);
 
@@ -182,10 +182,15 @@ export default Component.extend({
 
     //update nodes and link data in the simulation
     var nodes = simulation.nodes(graph.nodes);
+    // var links = simulation.force("link", d3.forceLink()
+    //   .links(graph.links)
+    //   .id(function(d) { return d.id; })
+    //   .distance(context.get('simulationdistance'))
+    //   .strength(function (d) {return context.get('simulationstrength')}));
     var links = simulation.force("link", d3.forceLink()
       .links(graph.links)
       .id(function(d) { return d.id; })
-      .distance(context.get('simulationdistance'))
+      .distance(function(d) { return Math.pow(Math.pow(d.source.x-d.target.x,2) + Math.pow(d.source.y-d.target.y,2), 1/2) })
       .strength(function (d) {return context.get('simulationstrength')}));
 
     console.log('Update Finished');
