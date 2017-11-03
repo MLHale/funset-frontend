@@ -1,4 +1,72 @@
 Exploring {{model.length}} terms<br>
 Total Terms in Ontology: {{route.termcount}}<br>
 
-{{term-ontology nodestobeadded=nodes.content linkstobeadded=links test=test labels=showTermLabels linkforce=linkForce}}
+<div class="layout-row layout-sm-column">
+  {{#paper-card class="flex" as |card|}}
+    {{#card.content class="layout-row layout-align-space-between"}}
+      {{term-ontology nodestobeadded=nodes.content linkstobeadded=links test=test labels=showTermLabels linkforce=linkForce}}
+    {{/card.content}}
+  {{/paper-card}}
+  <div class="layout-column flex-gt-sm-50 flex-gt-md-40 flex-gt-lg-30 termlist">
+    {{#paper-card}}
+      {{#paper-toolbar accent=true}}
+        {{#paper-toolbar-tools}}
+          <h5>
+            Exploring {{model.length}} terms<br>
+            Total Terms in Ontology: {{route.termcount}}
+          </h5>
+        {{/paper-toolbar-tools}}
+      {{/paper-toolbar}}
+      {{#paper-list}}
+        {{#paper-subheader}}Graph options{{/paper-subheader}}
+        {{#paper-item as |controls|}}
+          <p>Show Term Labels?</p>
+          <div class="md-secondary-container">
+            {{controls.checkbox
+              value=showTermLabels
+              secondary=true
+              onChange=(action (mut showTermLabels))}}
+          </div>
+        {{/paper-item}}
+        {{#paper-item as |controls|}}
+          <p>Apply forces on links?</p>
+          <div class="md-secondary-container">
+            {{controls.checkbox
+              value=linkForce
+              secondary=true
+              onChange=(action (mut linkForce))}}
+          </div>
+        {{/paper-item}}
+      {{/paper-list}}
+      {{#paper-list class="scrollabletermlist"}}
+        {{#paper-subheader}}Terms{{/paper-subheader}}
+          {{#each model as |term|}}
+            {{#paper-item class="md-3-line" as |controls|}}
+              {{paper-icon "title" class="md-avatar-icon"}}
+              <div class="md-list-item-text">
+                <h3>
+                  <strong>{{term.termid}}</strong>
+                </h3>
+                <h4>{{term.name}}</h4>
+                <p>
+                  {{term.description}}
+                </p>
+              </div>
+              {{!-- <div class="md-secondary-container">
+                {{#if waypoint.edit}}
+                  {{#controls.button secondary=true onClick=(action "saveMarker" waypoint)}}
+                    Save
+                  {{/controls.button}}
+                {{else}}
+                  {{#controls.button secondary=true onClick=(action "editMarker" waypoint)}}
+                    Edit
+                  {{/controls.button}}
+                {{/if}}
+              </div> --}}
+            {{/paper-item}}
+          {{/each}}
+
+      {{/paper-list}}
+    {{/paper-card}}
+  </div>
+</div>

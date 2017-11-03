@@ -1,1 +1,40 @@
 @import 'ember-paper';
+.link-layer line {
+  stroke: #aaa;
+  stroke-width: 1.5px;
+}
+
+.link-layer line.dotted {
+  stroke-dasharray: 5;
+}
+
+.node-layer circle {
+  pointer-events: all;
+  stroke: none;
+  stroke-width: 40px;
+}
+
+circle {
+  fill: #ccc;
+  stroke: #333;
+  stroke-width: 1.5px;
+}
+
+text {
+  font: 16px sans-serif;
+  pointer-events: none;
+}
+
+text.shadow {
+  stroke: #fff;
+  stroke-width: 5px;
+  stroke-opacity: .8;
+}
+.termlist {
+  max-height: 90vh !important;
+}
+
+.scrollabletermlist {
+  max-height: 100%;
+  overflow-y: auto;
+}

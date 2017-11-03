@@ -8,10 +8,10 @@ import d3 from 'npm:d3'
 export default Component.extend({
 
   tagName: 'svg',
-  classNames: ['awesome-d3-widget'],
+  classNames: ['term-ontology-graph'],
 
   width: 1000,
-  height: 800,
+  height: 1000,
   noderadius: 8,
   simulationdistance: 100,
   simulationstrength: 1,
@@ -70,6 +70,13 @@ export default Component.extend({
       }
     }
   }),
+  refreshState: Ember.observer('labels','linkforce', function(){
+    var context = this;
+    if(!context.get('updating')) {
+      context.set('updating', true);
+      Ember.run.scheduleOnce('afterRender', this, this.update);
+    }
+  }),
 
 
   // updateNodes: Ember.observer('links.@each', function(){
@@ -78,7 +85,7 @@ export default Component.extend({
   // }),
   simulationticked(){
     var radius = this.get('noderadius');
-    var width = this.get('width')-95;
+    var width = this.get('width');
     var height = this.get('height');
     this.get('linklayer').selectAll('line').attr("x1", function(d) { return Math.max(radius, Math.min(width - radius, d.source.x)); })
         .attr("y1", function(d) { return Math.max(radius, Math.min(height - radius, d.source.y)); })
@@ -94,7 +101,7 @@ export default Component.extend({
     });
   },
   didInsertElement() {
-
+    console.log(this.element);
     var svg = d3.select("svg"),
         width = +svg.attr("width"),
         height = +svg.attr("height");
@@ -170,13 +177,17 @@ export default Component.extend({
             .on("end", (d, i) => context.dragended(d, i, context)));
 
     //update text labels, each node should have a label corresponding to its id
+    var text_objects;
     if(this.get('labels')){
-      var text_objects = textlayer.selectAll("g").data(graph.nodes, function(d) { return d.id;})
+      text_objects = textlayer.selectAll("text").data(graph.nodes, function(d) { return d.id;});
       text_objects.enter().append("svg:text")
         .attr("x", 8)
         .attr("y", ".31em")
         .text(function(d) { return d.id; });
-      text_objects.exit().remove();
+
+    } else{
+        text_objects = textlayer.selectAll("text").data({}, function(d) { return d.id;});
+        text_objects.exit().remove();
     }
 
 
@@ -200,7 +211,7 @@ export default Component.extend({
         .distance(function(d) { return Math.pow(Math.pow(d.source.x-d.target.x,2) + Math.pow(d.source.y-d.target.y,2), 1/2) })
         .strength(function (d) {return context.get('simulationstrength')}));
     }
-    console.log('Update Finished');
+    // console.log('Update Finished');
     this.set('updating', false);
     // Ember.run.scheduleOnce('render', this, this.update);
   },
