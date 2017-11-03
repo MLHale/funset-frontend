@@ -15,10 +15,11 @@ export default Component.extend({
   noderadius: 8,
   simulationdistance: 100,
   simulationstrength: 1,
-  simulationrepulsiveforce: -30,
+  simulationrepulsiveforce: -50,
 
   attributeBindings: ['width', 'height'],
-
+  labels: false,
+  linkforce: false,
   // Array of points to render as circles in a line, spaced by time.
   //  [ {value: Number, timestamp: Number } ];
   canvas: null,
@@ -169,12 +170,15 @@ export default Component.extend({
             .on("end", (d, i) => context.dragended(d, i, context)));
 
     //update text labels, each node should have a label corresponding to its id
-    // var text_objects = textlayer.selectAll("g").data(graph.nodes, function(d) { return d.id;})
-    // text_objects.enter().append("svg:text")
-    //   .attr("x", 8)
-    //   .attr("y", ".31em")
-    //   .text(function(d) { return d.id; });
-    // text_objects.exit().remove();
+    if(this.get('labels')){
+      var text_objects = textlayer.selectAll("g").data(graph.nodes, function(d) { return d.id;})
+      text_objects.enter().append("svg:text")
+        .attr("x", 8)
+        .attr("y", ".31em")
+        .text(function(d) { return d.id; });
+      text_objects.exit().remove();
+    }
+
 
     // Restart the force layout.
     // simulation.alpha(1).restart();
@@ -182,17 +186,20 @@ export default Component.extend({
 
     //update nodes and link data in the simulation
     var nodes = simulation.nodes(graph.nodes);
-    // var links = simulation.force("link", d3.forceLink()
-    //   .links(graph.links)
-    //   .id(function(d) { return d.id; })
-    //   .distance(context.get('simulationdistance'))
-    //   .strength(function (d) {return context.get('simulationstrength')}));
-    var links = simulation.force("link", d3.forceLink()
-      .links(graph.links)
-      .id(function(d) { return d.id; })
-      .distance(function(d) { return Math.pow(Math.pow(d.source.x-d.target.x,2) + Math.pow(d.source.y-d.target.y,2), 1/2) })
-      .strength(function (d) {return context.get('simulationstrength')}));
-
+    if(this.get('linkforce')){
+      var links = simulation.force("link", d3.forceLink()
+        .links(graph.links)
+        .id(function(d) { return d.id; })
+        .distance(context.get('simulationdistance'))
+        .strength(function (d) {return context.get('simulationstrength')}));
+    }
+    else {
+      var links = simulation.force("link", d3.forceLink()
+        .links(graph.links)
+        .id(function(d) { return d.id; })
+        .distance(function(d) { return Math.pow(Math.pow(d.source.x-d.target.x,2) + Math.pow(d.source.y-d.target.y,2), 1/2) })
+        .strength(function (d) {return context.get('simulationstrength')}));
+    }
     console.log('Update Finished');
     this.set('updating', false);
     // Ember.run.scheduleOnce('render', this, this.update);

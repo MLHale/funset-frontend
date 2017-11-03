@@ -2,20 +2,8 @@ import Controller from '@ember/controller';
 import Ember from 'ember';
 
 export default Controller.extend({
-  // nodes: [
-  //   {id: "GO:000001", group: 1},
-  //   {id: "GO:000002", group: 1},
-  //   {id: "GO:000003", group: 1},
-  //   {id: "GO:000004", group: 1},
-  //   {id: "GO:000005", group: 1},
-  // ],
-  // links: [
-  //   {source: "GO:000001", target: "GO:000002", type:"dotted", value: 1},
-  //   {source: "GO:000001", target: "GO:000003", type:"dotted", value: 1},
-  //   {source: "GO:000001", target: "GO:000004", type:"dotted", value: 1},
-  //   {source: "GO:000001", target: "GO:000005", type:"dotted", value: 1},
-  //   {source: "GO:000002", target: "GO:000003", type:"solid", value: 1},
-  // ],
+  linkForce: false,
+  showTermLabels: false,
   nodes: Ember.ArrayProxy.create({content: Ember.A([])}),
   links: Ember.ArrayProxy.create({content: Ember.A([])}),
   processQueue: Ember.observer('route.loadingqueue.@each', function(){
@@ -27,7 +15,7 @@ export default Controller.extend({
       // console.log('Adding Term')
       // console.log(term);
       var scalefactor = 1000;
-      this.get('nodes').addObject({id: term.get('termid'), group: 'terms', x: 1500*term.get('semanticdissimilarityx')*scalefactor+scalefactor/2, y: 800*term.get('semanticdissimilarityy')*scalefactor+scalefactor/2});
+      this.get('nodes').addObject({id: term.get('termid'), group: 'terms', x: term.get('semanticdissimilarityx')*scalefactor+scalefactor/2, y: term.get('semanticdissimilarityy')*scalefactor+scalefactor/2});
       if(term.get('parents.length')>0){
         //if the object has parents, retrieve them and add them to the graph
         // console.log('Adding Parents')
