@@ -1,7 +1,7 @@
 <div class="layout-row layout-sm-column">
   {{#paper-card class="flex term-ontology-card" as |card|}}
     {{#card.content class="layout-row layout-align-space-between flex-100 term-ontology-graph-container"}}
-      {{term-ontology nodestobeadded=nodes.content linkstobeadded=links test=test labels=showTermLabels linkforce=linkForce}}
+      {{term-ontology nodes=nodes termloadingqueue=loadtermnodes labels=showTermLabels linkforce=linkForce}}
     {{/card.content}}
   {{/paper-card}}
   <div class="layout-column flex-gt-sm-50 flex-gt-md-40 flex-gt-lg-30 termlist">

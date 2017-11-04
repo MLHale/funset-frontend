@@ -20,6 +20,12 @@ circle {
   stroke-width: 1.5px;
 }
 
+circle.enrichment {
+  fill: red;
+  stroke: black;
+  stroke-width: 3px;
+}
+
 text {
   font: 16px sans-serif;
   pointer-events: none;

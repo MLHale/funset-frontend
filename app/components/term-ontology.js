@@ -22,40 +22,73 @@ export default Component.extend(ResizeAware,{
   labels: false,
   linkforce: false,
 
-  _nodes: Ember.ArrayProxy.create({content: Ember.A()}),
-  nodes: Ember.computed.alias('_nodes.content'),
-  _links: Ember.ArrayProxy.create({content: Ember.A()}),
-  links: Ember.computed.alias('_links.content'),
-
+  nodes: Ember.ArrayProxy.create({content: Ember.A()}),
+  _nodes: Ember.computed.alias('nodes.content'),
+  links: Ember.ArrayProxy.create({content: Ember.A()}),
+  _links: Ember.computed.alias('links.content'),
+  termloadingqueue: Ember.ArrayProxy.create({content: Ember.A()}),
+  linkloadingqueue: Ember.ArrayProxy.create({content: Ember.A()}),
   currentScaleFactorX: 1,
   currentScaleFactorY: 1,
 
   updating: false,
-  updateNodes: Ember.observer('nodestobeadded.@each', function(){
-    var context = this;
-    if(this.get('nodestobeadded.length')>0){
-      this.get('nodestobeadded').forEach(function(node){
-        context.get('_nodes').addObject(node);
-        context.get('nodestobeadded').removeObject(node);
-      });
-      if(!context.get('updating')) {
-        context.set('updating', true);
+  updateNodes: Ember.observer('termloadingqueue.@each', function(){
+    var scalefactor = 1000;
+    var center = 500;
+    var _this = this;
+    if(this.get('termloadingqueue.length')>0){
+      this.get('termloadingqueue.content').forEach(function(term){
+        this.get('nodes').addObject({
+          id: term.get('termid'),
+          group: 'enrichment',
+          x: term.get('semanticdissimilarityx')*scalefactor+center,
+          y: term.get('semanticdissimilarityy')*scalefactor+center,
+        });
+        //add parent nodes and an edge to each one
+
+        term.get('parents').forEach(function(parent){
+
+          _this.store.findRecord('term',parent.id).then(function(){
+            var parentterm = _this.store.peekRecord('term',parent.id);
+            // console.log(parentterm.get('id'));
+            if(!_this.get('nodes').findBy('id',parentterm.get('termid'))){
+              //check for duplicates before adding
+              _this.get('nodes').addObject({
+                id: parentterm.get('termid'),
+                group: 'parent',
+                x: parentterm.get('semanticdissimilarityx')*scalefactor+center,
+                y: parentterm.get('semanticdissimilarityy')*scalefactor+center,
+              });
+            }
+            _this.get('linkloadingqueue').addObject({
+              source: term.get('termid'),
+              target: parentterm.get('termid'),
+              type: 'dotted',
+              value: 1
+            });
+          });
+        });
+
+        this.get('termloadingqueue').removeObject(term);
+      }, this);
+      if(!this.get('updating')) {
+        this.set('updating', true);
         Ember.run.scheduleOnce('render', this, this.update);
       }
     }
     // Ember.run.scheduleOnce('render', this, this.update);
     // this.addNode();
   }),
-  updateLinks: Ember.observer('linkstobeadded.@each', function(){
+  updateLinks: Ember.observer('linkloadingqueue.@each', function(){
     var context = this;
-    if(this.get('linkstobeadded.length')>0){
-      this.get('linkstobeadded').forEach(function(link){
-        context.get('_links').addObject(link);
-        context.get('linkstobeadded').removeObject(link);
+    if(this.get('linkloadingqueue.length')>0){
+      this.get('linkloadingqueue').forEach(function(link){
+        context.get('links').addObject(link);
+        context.get('linkloadingqueue').removeObject(link);
       });
       if(!context.get('updating')) {
         context.set('updating', true);
-        Ember.run.scheduleOnce('afterRender', this, this.update);
+        Ember.run.scheduleOnce('render', this, this.update);
       }
     }
   }),
@@ -73,7 +106,7 @@ export default Component.extend(ResizeAware,{
     }
   }),
   updateTextLabels(){
-    var graph = {nodes: this.get('nodes'), links: this.get('links')};
+    var graph = {nodes: this.get('_nodes'), links: this.get('_links')};
     var textlayer = this.get('textlayer');
     var text_objects;
     if(this.get('labels')){
@@ -90,41 +123,50 @@ export default Component.extend(ResizeAware,{
   },
   updateLinkForces(){
     var context = this;
-    var graph = {nodes: this.get('nodes'), links: this.get('links')};
+    var graph = {nodes: this.get('_nodes'), links: this.get('_links')};
     var simulation = this.get('simulation');
     if(this.get('linkforce')){
       simulation.alpha(.5);
-      var links = simulation.force("link", d3.forceLink()
+      simulation.force("link", d3.forceLink()
         .links(graph.links)
         .id(function(d) { return d.id; })
         .distance(context.get('simulationdistance'))
-        .strength(function (d) {return context.get('simulationstrength')}));
+        .strength(context.get('simulationstrength')));
     }
     else {
-      var links = simulation.force("link", d3.forceLink()
+      simulation.force("link", d3.forceLink()
         .links(graph.links)
         .id(function(d) { return d.id; })
         .distance(function(d) { return Math.pow(Math.pow(d.source.x-d.target.x,2) + Math.pow(d.source.y-d.target.y,2), 1/2) })
-        .strength(function (d) {return context.get('simulationstrength')}));
+        .strength(context.get('simulationstrength')));
     }
     this.get('simulation', simulation);
     simulation.alpha(.3).restart();
   },
   didResize(event){
-    console.log(`Window resized: width: ${window.innerWidth}, height: ${window.innerHeight}`);
+    //console.log(`Window resized: width: ${window.innerWidth}, height: ${window.innerHeight}`);
     var svg = d3.select("svg");
     var width = this.set('width',this.$().parents('md-card-content').width());
     var height = this.set('height',this.$().parents('md-card-content').height());
     console.log(`New SVG size: width: ${width}, height: ${height}`);
     svg.attr("width", width);
     svg.attr("height", height);
+    var xAxisScale = this.set('xAxisScale', d3.scaleLinear()
+      .domain([-width/2,width/2])
+      .range([0,width]));
+
+    var yAxisScale = this.set('yAxisScale', d3.scaleLinear()
+      .domain([-height/2,height/2])
+      .range([height,0]));
+
+    this.get('xaxislayer').call(this.get('xAxis').scale(xAxisScale));
+    this.get('yaxislayer').call(this.get('yAxis').scale(yAxisScale));
+
   },
 
 
   simulationticked(){
-    var radius = this.get('noderadius');
-    var width = this.get('width');
-    var height = this.get('height');
+    // var radius = this.get('noderadius');;
     var context = this;
     this.get('linklayer').selectAll('line').attr("x1", function(d) { return d.source.x; })
         .attr("y1", function(d) { return d.source.y; })
@@ -141,7 +183,7 @@ export default Component.extend(ResizeAware,{
   },
   zoom() {
     var context = this;
-    console.log('zooming');
+    // console.log('zooming');
     // create new scale ojects based on event
     var new_xScale = d3.event.transform.rescaleX(this.get('xAxisScale'));
     var new_yScale = d3.event.transform.rescaleY(this.get('yAxisScale'));
@@ -158,7 +200,7 @@ export default Component.extend(ResizeAware,{
     this.get('textlayer').selectAll('text').attr("transform", function(d) {
       return "translate(" + d.x + "," + d.y + ")"+" scale("+context.get('currentScaleFactorX')+","+context.get('currentScaleFactorY')+")";
     });
-    var simulation = this.get('simulation');
+    // var simulation = this.get('simulation');
     // simulation.alpha(.1).restart();
   },
   didInsertElement() {
@@ -179,9 +221,9 @@ export default Component.extend(ResizeAware,{
     var simulation = d3.forceSimulation()
         .alphaMin(0.0001)
         // .force("link", d3.forceLink().id(function(d) { return d.id; }).distance(context.get('simulationdistance')).strength(context.get('simulationstrength')))
-        .force("charge", d3.forceManyBody().strength(function (d) {return context.get('simulationrepulsiveforce')}))
+        .force("charge", d3.forceManyBody().strength(context.get('simulationrepulsiveforce')))
         // .force("center", d3.forceCenter(width / 2, height / 2))
-        .velocityDecay(.6)
+        .velocityDecay(.4)
         .on("tick", ()=> Ember.run.scheduleOnce('render', context, context.simulationticked));
     this.set('simulation', simulation);
 
@@ -198,40 +240,39 @@ export default Component.extend(ResizeAware,{
     var xAxis = this.set('xAxis', d3.axisBottom(xAxisScale));
     var yAxis = this.set('yAxis', d3.axisLeft(yAxisScale));
     // Draw Axis
-    var xaxislayer = this.set('xaxislayer',svg.append("g")
+    this.set('xaxislayer',svg.append("g")
         .attr("class", "axis xaxis-layer")
         .attr("transform", "translate(40," + 0+ ")")
         .call(xAxis));
 
-    var yaxislayer = this.set('yaxislayer', svg.append("g")
+    this.set('yaxislayer', svg.append("g")
         .attr("class", "axis yaxis-layer")
         .attr("transform", "translate(40," + 0+ ")")
         .call(yAxis));
 
-    var zoomview = svg.append("rect")
+    //zoom view layer
+    svg.append("rect")
       .attr("class", "zoom")
       .attr("width", width)
       .attr("height", height)
       .call(zoom);
 
-    var markerlayer = svg.append("g").attr("class", "marker-layer")
+    //markers for lines
+    this.set('markerlayer', svg.append("g").attr("class", "marker-layer"));
 
-    this.set('markerlayer', markerlayer);
+    this.set('linklayer', svg.append("g").attr("class", "link-layer"));
 
-    var linklayer = svg.append("g").attr("class", "link-layer");
-    this.set('linklayer', linklayer);
+    this.set('nodelayer', svg.append("g").attr("class", "node-layer"));
 
-    var nodelayer = svg.append("g").attr("class", "node-layer");
-    this.set('nodelayer', nodelayer);
+    this.set('textlayer', svg.append("g").attr("class", "text-layer"));
 
-    var textlayer = svg.append("g").attr("class", "text-layer")
-    this.set('textlayer', textlayer);
-    // Schedule a call to our the render method
+    // Schedule a call to update the graph
     Ember.run.scheduleOnce('render', this, this.update);
   },
   update() {
-    var svg = this.get('svg');
+
     var simulation = this.get('simulation');
+    simulation.stop();
     var context = this;
 
     var markerlayer = this.get('markerlayer');
@@ -239,7 +280,7 @@ export default Component.extend(ResizeAware,{
     var nodelayer = this.get('nodelayer');
     var textlayer = this.get('textlayer');
 
-    var graph = {nodes: this.get('nodes'), links: this.get('links')};
+    var graph = {nodes: this.get('_nodes'), links: this.get('_links')};
 
     //setup the marker layer (arrowheads)
     var marker_objects = markerlayer.selectAll("marker").data(["dotted", "solid"]);
@@ -256,22 +297,27 @@ export default Component.extend(ResizeAware,{
     marker_objects.exit().remove();
     //
     //Setup edges and draw them on the graph - attaching a new svg line for each edge
+
+
+    //update nodes in the graph, entering a new svg circle of radius r for each node. Each node also has a handler for drag events
+    var node_objects= nodelayer.selectAll("circle").data(graph.nodes, function(d) { return d.id;});
+
+    //need to figure out why exit is occilating, disabled for now
+    // node_objects.exit().remove();
+    node_objects.enter().append("circle").attr("r", this.get('noderadius'))
+        .attr("class", function(d){ return d.group})
+        .call(d3.drag()
+            .on("start", (d, i) => context.dragstarted(d, i, context))
+            .on("drag", (d, i) => context.dragged(d, i, context))
+            .on("end", (d, i) => context.dragended(d, i, context)));
+
+
     var link_objects = linklayer.selectAll("line").data(graph.links);
     link_objects.enter().append("line")
       .attr("class", function(d) { return "link " + d.type; })
       .attr("marker-end", function(d) { return "url(#" + d.type + ")"; });
 
     link_objects.exit().remove();
-
-    //update nodes in the graph, entering a new svg circle of radius r for each node. Each node also has a handler for drag events
-    var node_objects= nodelayer.selectAll("circle").data(graph.nodes, function(d) { return d.id;});
-    node_objects.exit().remove();
-    node_objects.enter().append("circle").attr("r", this.get('noderadius'))
-        .call(d3.drag()
-            .on("start", (d, i) => context.dragstarted(d, i, context))
-            .on("drag", (d, i) => context.dragged(d, i, context))
-            .on("end", (d, i) => context.dragended(d, i, context)));
-
     //update text labels, each node should have a label corresponding to its id
     var text_objects;
     if(this.get('labels')){
@@ -286,32 +332,27 @@ export default Component.extend(ResizeAware,{
         text_objects.exit().remove();
     }
 
-
-    // Restart the force layout.
-    // simulation.alpha(1).restart();
-    // this.set('simulation', simulation);
-
     //update nodes and link data in the simulation
-    var nodes = simulation.nodes(graph.nodes);
+    simulation.nodes(graph.nodes);
     if(this.get('linkforce')){
-      var links = simulation.force("link", d3.forceLink()
+      simulation.force("link", d3.forceLink()
         .links(graph.links)
         .id(function(d) { return d.id; })
         .distance(context.get('simulationdistance'))
-        .strength(function (d) {return context.get('simulationstrength')}));
+        .strength(context.get('simulationstrength')));
     }
     else {
-      var links = simulation.force("link", d3.forceLink()
+      simulation.force("link", d3.forceLink()
         .links(graph.links)
         .id(function(d) { return d.id; })
         .distance(function(d) { return Math.pow(Math.pow(d.source.x-d.target.x,2) + Math.pow(d.source.y-d.target.y,2), 1/2) })
-        .strength(function (d) {return context.get('simulationstrength')}));
+        .strength(context.get('simulationstrength')));
     }
-    // console.log('Update Finished');
     this.set('updating', false);
-    // Ember.run.scheduleOnce('render', this, this.update);
+    simulation.restart();
+    // console.log('update finished');
   },
-  dragstarted (d, i, context) {
+  dragstarted (d, i) {
     //log starting position on element d when acted upon by a d3 event
     //see https://github.com/d3/d3-force#simulation_nodes
 
@@ -319,13 +360,13 @@ export default Component.extend(ResizeAware,{
     d.fx = d.x;
     d.fy = d.y;
   },
-  dragged (d, i, context) {
+  dragged (d, i) {
     //handle a drag event by setting the element d's position to the new x,y position identified by the event
     d.fx = d3.event.x;
     d.fy = d3.event.y;
   },
 
-  dragended (d, i, context) {
+  dragended (d, i) {
     //clear effect (fx) params when the event ends
     if (!d3.event.active) this.get('simulation').alphaTarget(0);
     d.fx = null;
