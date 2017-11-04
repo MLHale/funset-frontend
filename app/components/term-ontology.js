@@ -15,7 +15,7 @@ export default Component.extend(ResizeAware,{
   height: 1000,
   noderadius: 8,
   simulationdistance: 100,
-  simulationstrength: 1,
+  simulationstrength: 0.5,
   simulationrepulsiveforce: -10,
 
   attributeBindings: ['width', 'height'],
@@ -219,11 +219,11 @@ export default Component.extend(ResizeAware,{
 
     //setup simulation forces (how the graph moves)
     var simulation = d3.forceSimulation()
-        .alphaMin(0.0001)
+        .alphaMin(0.00001)
         // .force("link", d3.forceLink().id(function(d) { return d.id; }).distance(context.get('simulationdistance')).strength(context.get('simulationstrength')))
         .force("charge", d3.forceManyBody().strength(context.get('simulationrepulsiveforce')))
         // .force("center", d3.forceCenter(width / 2, height / 2))
-        .velocityDecay(.4)
+        .velocityDecay(.45)
         .on("tick", ()=> Ember.run.scheduleOnce('render', context, context.simulationticked));
     this.set('simulation', simulation);
 
