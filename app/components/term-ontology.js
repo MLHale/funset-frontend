@@ -21,29 +21,15 @@ export default Component.extend(ResizeAware,{
   attributeBindings: ['width', 'height'],
   labels: false,
   linkforce: false,
-  // Array of points to render as circles in a line, spaced by time.
-  //  [ {value: Number, timestamp: Number } ];
-  canvas: null,
+
   _nodes: Ember.ArrayProxy.create({content: Ember.A()}),
   nodes: Ember.computed.alias('_nodes.content'),
   _links: Ember.ArrayProxy.create({content: Ember.A()}),
   links: Ember.computed.alias('_links.content'),
-  // nodes: [
-  //   {id: "GO:000001", group: 1},
-  //   {id: "GO:000002", group: 1},
-  //   {id: "GO:000003", group: 1},
-  //   {id: "GO:000004", group: 1},
-  //   {id: "GO:000005", group: 1},
-  // ],
-  // links: [
-  //   {source: "GO:000001", target: "GO:000002", type:"dotted", value: 1},
-  //   {source: "GO:000001", target: "GO:000003", type:"dotted", value: 1},
-  //   {source: "GO:000001", target: "GO:000004", type:"dotted", value: 1},
-  //   {source: "GO:000001", target: "GO:000005", type:"dotted", value: 1},
-  //   {source: "GO:000002", target: "GO:000003", type:"solid", value: 1},
-  // ],
+
   currentScaleFactorX: 1,
   currentScaleFactorY: 1,
+
   updating: false,
   updateNodes: Ember.observer('nodestobeadded.@each', function(){
     var context = this;
@@ -344,51 +330,5 @@ export default Component.extend(ResizeAware,{
     if (!d3.event.active) this.get('simulation').alphaTarget(0);
     d.fx = null;
     d.fy = null;
-  },
-  addLink (sourceId, targetId) {
-    var links = this.get('links');
-    var sourceNode = this.findNode(sourceId);
-    var targetNode = this.findNode(targetId);
-
-    if((sourceNode !== undefined) && (targetNode !== undefined)) {
-        links.push({"source": sourceNode, "target": targetNode});
-        this.update();
-    }
-  },
-  // Add and remove elements on the graph object
-  addNode (node) {
-    // console.log('addnode');
-    // console.log(id);
-
-    this.get('nodes').push(node);
-  },
-  removeNode (id) {
-    var nodes = this.get('nodes');
-    var links = this.get('links');
-    var i = 0;
-    var n = this.findNode(id);
-    while (i < links.length) {
-        if ((links[i]['source'] === n)||(links[i]['target'] == n)) links.splice(i,1);
-        else i++;
-    }
-    var index = this.findNodeIndex(id);
-    if(index !== undefined) {
-        nodes.splice(index, 1);
-        this.update();
-    }
-  },
-  findNode (id) {
-    var nodes = this.get('nodes');
-    for (var i=0; i < nodes.length; i++) {
-        if (nodes[i].id === id)
-            return nodes[i]
-    }
-  },
-  findNodeIndex (id) {
-    var nodes = this.get('nodes');
-    for (var i=0; i < nodes.length; i++) {
-        if (nodes[i].id === id)
-            return i
-    }
   },
 });
