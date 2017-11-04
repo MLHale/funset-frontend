@@ -42,6 +42,8 @@ export default Component.extend(ResizeAware,{
   //   {source: "GO:000001", target: "GO:000005", type:"dotted", value: 1},
   //   {source: "GO:000002", target: "GO:000003", type:"solid", value: 1},
   // ],
+  currentScaleFactorX: 1,
+  currentScaleFactorY: 1,
   updating: false,
   updateNodes: Ember.observer('nodestobeadded.@each', function(){
     var context = this;
@@ -105,7 +107,7 @@ export default Component.extend(ResizeAware,{
     var graph = {nodes: this.get('nodes'), links: this.get('links')};
     var simulation = this.get('simulation');
     if(this.get('linkforce')){
-      simulation.alpha(.3);
+      simulation.alpha(.5);
       var links = simulation.force("link", d3.forceLink()
         .links(graph.links)
         .id(function(d) { return d.id; })
@@ -120,6 +122,7 @@ export default Component.extend(ResizeAware,{
         .strength(function (d) {return context.get('simulationstrength')}));
     }
     this.get('simulation', simulation);
+    simulation.alpha(.3).restart();
   },
   didResize(event){
     console.log(`Window resized: width: ${window.innerWidth}, height: ${window.innerHeight}`);
@@ -129,7 +132,6 @@ export default Component.extend(ResizeAware,{
     console.log(`New SVG size: width: ${width}, height: ${height}`);
     svg.attr("width", width);
     svg.attr("height", height);
-    this.simulationticked();
   },
 
 
@@ -137,6 +139,7 @@ export default Component.extend(ResizeAware,{
     var radius = this.get('noderadius');
     var width = this.get('width');
     var height = this.get('height');
+    var context = this;
     this.get('linklayer').selectAll('line').attr("x1", function(d) { return d.source.x; })
         .attr("y1", function(d) { return d.source.y; })
         .attr("x2", function(d) { return d.target.x; })
@@ -147,22 +150,30 @@ export default Component.extend(ResizeAware,{
         .attr("cy", function(d) { return d.y; });
 
     this.get('textlayer').selectAll('text').attr("transform", function(d) {
-      return "translate(" + d.x + "," + d.y + ")";
+      return "translate(" + d.x + "," + d.y + ")"+" scale("+context.get('currentScaleFactorX')+","+context.get('currentScaleFactorY')+")";
     });
   },
-  zoomed() {
+  zoom() {
+    var context = this;
+    console.log('zooming');
     // create new scale ojects based on event
-      var new_xScale = d3.event.transform.rescaleX(this.get('xAxisScale'));
-      var new_yScale = d3.event.transform.rescaleY(this.get('yAxisScale'));
-      // console.log(d3.event.transform);
+    var new_xScale = d3.event.transform.rescaleX(this.get('xAxisScale'));
+    var new_yScale = d3.event.transform.rescaleY(this.get('yAxisScale'));
+    this.set('currentScaleFactorX',d3.event.transform.k)
+    this.set('currentScaleFactorY',d3.event.transform.k);
 
-      // update axes
-      this.get('xaxislayer').call(this.get('xAxis').scale(new_xScale));
-      this.get('yaxislayer').call(this.get('yAxis').scale(new_yScale));
+    // update axes
+    this.get('xaxislayer').call(this.get('xAxis').scale(new_xScale));
+    this.get('yaxislayer').call(this.get('yAxis').scale(new_yScale));
 
-      // update node zoom
-      this.get('nodelayer').selectAll('circle').attr("transform", d3.event.transform);
-      this.get('linklayer').selectAll('line').attr("transform", d3.event.transform);
+    // update node zoom
+    this.get('nodelayer').selectAll('circle').attr("transform", d3.event.transform);
+    this.get('linklayer').selectAll('line').attr("transform", d3.event.transform);
+    this.get('textlayer').selectAll('text').attr("transform", function(d) {
+      return "translate(" + d.x + "," + d.y + ")"+" scale("+context.get('currentScaleFactorX')+","+context.get('currentScaleFactorY')+")";
+    });
+    var simulation = this.get('simulation');
+    // simulation.alpha(.1).restart();
   },
   didInsertElement() {
     var context = this;
@@ -171,7 +182,7 @@ export default Component.extend(ResizeAware,{
     var height = this.set('height',this.$().parents('md-card-content').height());
 
     var zoom = d3.zoom()
-        .on("zoom", ()=>context.zoomed(context));
+        .on("zoom", ()=>context.zoom(context));
 
     var svg = d3.select("svg");
     svg.attr("width", this.get('width'));
@@ -180,7 +191,7 @@ export default Component.extend(ResizeAware,{
 
     //setup simulation forces (how the graph moves)
     var simulation = d3.forceSimulation()
-        .alphaMin(0.001)
+        .alphaMin(0.0001)
         // .force("link", d3.forceLink().id(function(d) { return d.id; }).distance(context.get('simulationdistance')).strength(context.get('simulationstrength')))
         .force("charge", d3.forceManyBody().strength(function (d) {return context.get('simulationrepulsiveforce')}))
         // .force("center", d3.forceCenter(width / 2, height / 2))
