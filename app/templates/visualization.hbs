@@ -1,7 +1,7 @@
 <div class="layout-row layout-sm-column">
   {{#paper-card class="flex term-ontology-card" as |card|}}
     {{#card.content class="layout-row layout-align-space-between flex-100 term-ontology-graph-container"}}
-      {{term-ontology nodes=nodes termloadingqueue=loadtermnodes labels=showTermLabels linkforce=linkForce}}
+      {{term-ontology nodes=nodes termloadingqueue=loadtermnodes labels=showTermLabels linkforce=linkForce forceRefreshGraph=forceRefreshGraph}}
     {{/card.content}}
   {{/paper-card}}
   <div class="layout-column flex-gt-sm-50 flex-gt-md-40 flex-gt-lg-30 termlist">
@@ -38,8 +38,8 @@
       {{#paper-list class="scrollabletermlist"}}
         {{#paper-subheader}}Terms{{/paper-subheader}}
           {{#each model as |term|}}
-            {{#paper-item class="md-3-line" as |controls|}}
-              {{paper-icon "title" class="md-avatar-icon"}}
+            {{#paper-item class="md-3-line" onClick=(action "selectTerm" term) as |controls|}}
+              {{paper-icon "title" class=(concat "md-avatar-icon" (if term.selected " term-selected"))}}
               <div class="md-list-item-text">
                 <h3>
                   <strong>{{term.termid}}</strong>
@@ -58,8 +58,8 @@
                   {{#controls.button secondary=true onClick=(action "editMarker" waypoint)}}
                     Edit
                   {{/controls.button}}
-                {{/if}}
-              </div> --}}
+                {{/if}} --}}
+              {{!-- </div> --}}
             {{/paper-item}}
           {{/each}}
 

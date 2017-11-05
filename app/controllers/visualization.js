@@ -15,4 +15,11 @@ export default Controller.extend({
       this.get('loadtermnodes').addObject(term);
     }
   }),
+  actions: {
+    selectTerm(term){
+      this.get('nodes').findBy('id', term.get('termid')).selected = true;
+      term.set('selected', true);
+      this.set('forceRefreshGraph',true);
+    }
+  }
 });

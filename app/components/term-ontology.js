@@ -28,10 +28,25 @@ export default Component.extend(ResizeAware,{
   _links: Ember.computed.alias('links.content'),
   termloadingqueue: Ember.ArrayProxy.create({content: Ember.A()}),
   linkloadingqueue: Ember.ArrayProxy.create({content: Ember.A()}),
+  forceRefreshGraph: false,
   currentScaleFactorX: 1,
   currentScaleFactorY: 1,
 
   updating: false,
+  refreshGraph: Ember.observer('forceRefreshGraph', function(){
+    console.log('refreshing');
+    if (this.get('forceRefreshGraph')){
+      this.get('simulation').alpha(.5)
+      var node_objects= this.get('nodelayer').selectAll("circle").data(this.get('_nodes'), function(d) { return d.id;});
+      //need to figure out why exit is occilating, disabled for now
+      // node_objects.exit().remove();
+
+      node_objects.attr("class", function(d){return d.selected ? d.group + ' selected' : d.group});
+      this.get('simulation').alpha(.5).restart();
+      // this.set('forceRefreshGraph', false);
+    }
+
+  }),
   updateNodes: Ember.observer('termloadingqueue.@each', function(){
     var scalefactor = 1000;
     var center = 500;
@@ -140,7 +155,6 @@ export default Component.extend(ResizeAware,{
         .distance(function(d) { return Math.pow(Math.pow(d.source.x-d.target.x,2) + Math.pow(d.source.y-d.target.y,2), 1/2) })
         .strength(context.get('simulationstrength')));
     }
-    this.get('simulation', simulation);
     simulation.alpha(.3).restart();
   },
   didResize(event){
@@ -301,16 +315,15 @@ export default Component.extend(ResizeAware,{
 
     //update nodes in the graph, entering a new svg circle of radius r for each node. Each node also has a handler for drag events
     var node_objects= nodelayer.selectAll("circle").data(graph.nodes, function(d) { return d.id;});
-
     //need to figure out why exit is occilating, disabled for now
     // node_objects.exit().remove();
     node_objects.enter().append("circle").attr("r", this.get('noderadius'))
-        .attr("class", function(d){ return d.group})
         .call(d3.drag()
             .on("start", (d, i) => context.dragstarted(d, i, context))
             .on("drag", (d, i) => context.dragged(d, i, context))
             .on("end", (d, i) => context.dragended(d, i, context)));
 
+    node_objects.attr("class", function(d){return d.selected ? d.group + ' selected' : d.group});
 
     var link_objects = linklayer.selectAll("line").data(graph.links);
     link_objects.enter().append("line")

@@ -26,6 +26,12 @@ circle.enrichment {
   stroke-width: 3px;
 }
 
+circle.selected {
+  fill: blue;
+  stroke: black;
+  stroke-width: 3px;
+}
+
 text {
   font: 16px sans-serif;
   pointer-events: none;
@@ -60,4 +66,8 @@ term-ontology-graph {
   cursor: move;
   fill: none;
   pointer-events: all;
+}
+
+md-icon.term-selected {
+  background-color: rgba(4, 0, 255, 0.38) !important;
 }
