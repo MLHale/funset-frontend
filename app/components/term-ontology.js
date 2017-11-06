@@ -28,24 +28,29 @@ export default Component.extend(ResizeAware,{
   _links: Ember.computed.alias('links.content'),
   termloadingqueue: Ember.ArrayProxy.create({content: Ember.A()}),
   linkloadingqueue: Ember.ArrayProxy.create({content: Ember.A()}),
-  forceRefreshGraph: false,
+  renderEventQueue: Ember.ArrayProxy.create({content: Ember.A()}),
   currentScaleFactorX: 1,
   currentScaleFactorY: 1,
 
   updating: false,
-  refreshGraph: Ember.observer('forceRefreshGraph', function(){
-    console.log('refreshing');
-    if (this.get('forceRefreshGraph')){
-      this.get('simulation').alpha(.5)
-      var node_objects= this.get('nodelayer').selectAll("circle").data(this.get('_nodes'), function(d) { return d.id;});
-      //need to figure out why exit is occilating, disabled for now
-      // node_objects.exit().remove();
+  renderEventProcessor: Ember.observer('renderEventQueue.@each', function(){
+    var renderEventQueue = this.get('renderEventQueue');
+    var event = renderEventQueue.get('firstObject');
+    if(renderEventQueue.get('length')>0&&event.type!==null){
+      if (event.type === 'selectednode'){
+        this.get('nodes').findBy('id', event.node.get('termid')).selected = true;
+        var node_objects= this.get('nodelayer').selectAll("circle").data(this.get('_nodes'), function(d) { return d.id;});
 
-      node_objects.attr("class", function(d){return d.selected ? d.group + ' selected' : d.group});
-      this.get('simulation').alpha(.5).restart();
-      // this.set('forceRefreshGraph', false);
+        node_objects.attr("class", function(d){return d.selected ? d.group + ' selected' : d.group});
+      }
+      else if (event.type === 'deselectednode'){
+        this.get('nodes').findBy('id', event.node.get('termid')).selected = false;
+        var node_objects= this.get('nodelayer').selectAll("circle").data(this.get('_nodes'), function(d) { return d.id;});
+
+        node_objects.attr("class", function(d){return d.selected ? d.group + ' selected' : d.group});
+      }
     }
-
+    renderEventQueue.popObject();
   }),
   updateNodes: Ember.observer('termloadingqueue.@each', function(){
     var scalefactor = 1000;

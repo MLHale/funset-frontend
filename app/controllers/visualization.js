@@ -7,6 +7,7 @@ export default Controller.extend({
   nodes: Ember.ArrayProxy.create({content: Ember.A([])}), //nodes maintained by d3 term-ontology component
   links: Ember.ArrayProxy.create({content: Ember.A([])}), //links maintained by d3 term-ontology component
   loadtermnodes: Ember.ArrayProxy.create({content: Ember.A([])}),//nodes to be loaded in the visualization
+  renderEventQueue: Ember.ArrayProxy.create({content: Ember.A()}),
   processQueue: Ember.observer('route.loadingqueue.@each', function(){
     var queue = this.get('route.loadingqueue');
     if(queue.content.length > 0){
@@ -16,10 +17,16 @@ export default Controller.extend({
     }
   }),
   actions: {
-    selectTerm(term){
-      this.get('nodes').findBy('id', term.get('termid')).selected = true;
-      term.set('selected', true);
-      this.set('forceRefreshGraph',true);
+    toggleSelectedTerm(term){
+      var event = {type: '', node: term}
+      if (term.get('selected')){
+        term.set('selected', false);
+        event.type = 'deselectednode';
+      } else{
+        term.set('selected', true);
+        event.type = 'selectednode';
+      }
+      this.get('renderEventQueue').addObject(event);
     }
   }
 });
