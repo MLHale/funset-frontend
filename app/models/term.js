@@ -9,4 +9,5 @@ export default DS.Model.extend({
   parents: DS.hasMany('term'),
   semanticdissimilarityx: DS.attr('number'),
   semanticdissimilarityy: DS.attr('number'),
+  enrichments: DS.belongsTo('enrichment')
 });

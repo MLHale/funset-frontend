@@ -5,6 +5,10 @@ export default Controller.extend({
   linkForce: false,
   showTermLabels: false,
   nodes: Ember.ArrayProxy.create({content: Ember.A([])}), //nodes maintained by d3 term-ontology component
+
+  sortedNodes: Ember.computed('nodes.@each', function(){
+    return this.get('nodes').sortBy('enrichment.pvalue')
+  }),
   links: Ember.ArrayProxy.create({content: Ember.A([])}), //links maintained by d3 term-ontology component
   loadtermnodes: Ember.ArrayProxy.create({content: Ember.A([])}),//nodes to be loaded in the visualization
   renderEventQueue: Ember.ArrayProxy.create({content: Ember.A()}),
@@ -12,8 +16,7 @@ export default Controller.extend({
     var queue = this.get('route.loadingqueue');
     if(queue.content.length > 0){
       let node = queue.popObject();
-      var term = this.store.peekRecord('term',node.id);
-      this.get('loadtermnodes').addObject(term);
+      this.get('loadtermnodes').addObject(node);
     }
   }),
   actions: {

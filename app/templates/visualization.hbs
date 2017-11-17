@@ -9,7 +9,7 @@
       {{#paper-toolbar accent=true}}
         {{#paper-toolbar-tools}}
           <h5>
-            Exploring {{model.length}} terms<br>
+            Exploring {{nodes.length}} terms<br>
             Total Terms in Ontology: {{route.termcount}}
           </h5>
         {{/paper-toolbar-tools}}
@@ -37,16 +37,16 @@
       {{/paper-list}}
       {{#paper-list class="scrollabletermlist"}}
         {{#paper-subheader}}Terms{{/paper-subheader}}
-          {{#each model as |term|}}
-            {{#paper-item class="md-3-line" onClick=(action "toggleSelectedTerm" term) as |controls|}}
-              {{paper-icon "title" class=(concat "md-avatar-icon" (if term.selected " term-selected"))}}
+          {{#each sortedNodes as |node|}}
+            {{#paper-item class="md-3-line" onClick=(action "toggleSelectedTerm" node.term) as |controls|}}
+              {{paper-icon "title" class=(concat "md-avatar-icon" (if node.term.selected " term-selected"))}}
               <div class="md-list-item-text">
                 <h3>
-                  <strong>{{term.termid}}</strong>
+                  <strong>{{node.term.termid}} ({{node.enrichment.pvalue}})</strong>
                 </h3>
-                <h4>{{term.name}}</h4>
+                <h4>{{node.term.name}}</h4>
                 <p>
-                  {{term.description}}
+                  {{node.term.description}}
                 </p>
               </div>
               {{!-- <div class="md-secondary-container">

@@ -57,39 +57,43 @@ export default Component.extend(ResizeAware,{
     var center = 500;
     var _this = this;
     if(this.get('termloadingqueue.length')>0){
-      this.get('termloadingqueue.content').forEach(function(term){
+      this.get('termloadingqueue.content').forEach(function(enrichmentterm){
+        var term = enrichmentterm.term;
+        var enrichment = enrichmentterm.enrichment;
         this.get('nodes').addObject({
           id: term.get('termid'),
           group: 'enrichment',
+          term: term,
+          enrichment: enrichment,
           x: term.get('semanticdissimilarityx')*scalefactor+center,
           y: term.get('semanticdissimilarityy')*scalefactor+center,
         });
         //add parent nodes and an edge to each one
 
-        term.get('parents').forEach(function(parent){
+        // term.get('parents').forEach(function(parent){
+        //
+        //   _this.store.findRecord('term',parent.id).then(function(){
+        //     var parentterm = _this.store.peekRecord('term',parent.id);
+        //     // console.log(parentterm.get('id'));
+        //     if(!_this.get('nodes').findBy('id',parentterm.get('termid'))){
+        //       //check for duplicates before adding
+        //       _this.get('nodes').addObject({
+        //         id: parentterm.get('termid'),
+        //         group: 'parent',
+        //         x: parentterm.get('semanticdissimilarityx')*scalefactor+center,
+        //         y: parentterm.get('semanticdissimilarityy')*scalefactor+center,
+        //       });
+        //     }
+        //     _this.get('linkloadingqueue').addObject({
+        //       source: term.get('termid'),
+        //       target: parentterm.get('termid'),
+        //       type: 'dotted',
+        //       value: 1
+        //     });
+        //   });
+        // });
 
-          _this.store.findRecord('term',parent.id).then(function(){
-            var parentterm = _this.store.peekRecord('term',parent.id);
-            // console.log(parentterm.get('id'));
-            if(!_this.get('nodes').findBy('id',parentterm.get('termid'))){
-              //check for duplicates before adding
-              _this.get('nodes').addObject({
-                id: parentterm.get('termid'),
-                group: 'parent',
-                x: parentterm.get('semanticdissimilarityx')*scalefactor+center,
-                y: parentterm.get('semanticdissimilarityy')*scalefactor+center,
-              });
-            }
-            _this.get('linkloadingqueue').addObject({
-              source: term.get('termid'),
-              target: parentterm.get('termid'),
-              type: 'dotted',
-              value: 1
-            });
-          });
-        });
-
-        this.get('termloadingqueue').removeObject(term);
+        this.get('termloadingqueue').removeObject(enrichmentterm);
       }, this);
       if(!this.get('updating')) {
         this.set('updating', true);
