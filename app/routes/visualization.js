@@ -27,6 +27,9 @@ export default Route.extend({
           })
         });
       })
+      Ember.$.getJSON(config.host+'/api/v1/terms/get_pages').then(function(result){
+        _this.set('termcount',result.data.count);
+      })
       // loadedrun.get('enrichments').forEach(function(enrichment){
       //   console.log(enrichment);
       //   enrichment.get('term').then(function(term){
@@ -34,7 +37,7 @@ export default Route.extend({
       //   });
       // });
     });
-    return this.store.peekAll('enrichment');
+    return Ember.ArrayProxy.create({content: Ember.A([])})
     // this.store.query('run', {geneids:params.geneids});
     // Ember.$.getJSON(config.host+'/api/v1/terms/get_pages').then(function(result){
     //   _this.set('termcount',result.data.count);

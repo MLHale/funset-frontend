@@ -4,10 +4,10 @@ import Ember from 'ember';
 export default Controller.extend({
   linkForce: false,
   showTermLabels: false,
-  nodes: Ember.ArrayProxy.create({content: Ember.A([])}), //nodes maintained by d3 term-ontology component
+  // nodes: Ember.ArrayProxy.create({content: Ember.A([])}), //nodes maintained by d3 term-ontology component
 
-  sortedNodes: Ember.computed('nodes.@each', function(){
-    return this.get('nodes').sortBy('enrichment.pvalue')
+  sortedNodes: Ember.computed('model.@each', function(){
+    return this.get('model').sortBy('enrichment.pvalue')
   }),
   links: Ember.ArrayProxy.create({content: Ember.A([])}), //links maintained by d3 term-ontology component
   loadtermnodes: Ember.ArrayProxy.create({content: Ember.A([])}),//nodes to be loaded in the visualization
@@ -19,6 +19,14 @@ export default Controller.extend({
       this.get('loadtermnodes').addObject(node);
     }
   }),
+  init(){
+    this._super();
+    console.log('controller init')
+  },
+  willDestroy(){
+    this._super();
+    console.log('controller destroy')
+  },
   actions: {
     toggleSelectedTerm(term){
       var event = {type: '', node: term}

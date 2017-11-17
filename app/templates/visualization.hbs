@@ -1,7 +1,7 @@
 <div class="layout-row layout-sm-column">
   {{#paper-card class="flex term-ontology-card" as |card|}}
     {{#card.content class="layout-row layout-align-space-between flex-100 term-ontology-graph-container"}}
-      {{term-ontology nodes=nodes termloadingqueue=loadtermnodes labels=showTermLabels linkforce=linkForce renderEventQueue=renderEventQueue}}
+      {{term-ontology nodes=model termloadingqueue=loadtermnodes labels=showTermLabels linkforce=linkForce renderEventQueue=renderEventQueue}}
     {{/card.content}}
   {{/paper-card}}
   <div class="layout-column flex-gt-sm-50 flex-gt-md-40 flex-gt-lg-30 termlist">
@@ -9,7 +9,7 @@
       {{#paper-toolbar accent=true}}
         {{#paper-toolbar-tools}}
           <h5>
-            Exploring {{nodes.length}} terms<br>
+            Exploring {{model.length}} terms<br>
             Total Terms in Ontology: {{route.termcount}}
           </h5>
         {{/paper-toolbar-tools}}
