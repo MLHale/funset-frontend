@@ -12,6 +12,11 @@
           <span>Instructions for using this app</span>
 
         {{/content.menu-item}}
+        {{#content.menu-item onClick="openDialog"}}
+          {{paper-icon "info"}}
+          <span>About the authors</span>
+
+        {{/content.menu-item}}
         {{#each menuitems as |item|}}
           {{#content.menu-item onClick=(action "externalLink" item)}}
             {{paper-icon item.icon}}

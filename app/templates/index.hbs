@@ -1,1 +1,42 @@
-{{outlet}}
+<div class="layout-row">
+  <div class="layout-column flex-30">
+    {{#paper-card class="landing-page-card" as |card|}}
+      {{card.image src=(concat rootURL "/img/uno-lockup-logo.png") alt="pathway_viz" title="pathway_viz"}}
+      {{#card.title as |title|}}
+        {{#title.text as |text|}}
+          {{#text.headline}}Welcome to Pathway Enrichment Visualization App{{/text.headline}}
+          {{#text.subhead}}By Matt Hale, Dario Ghersi, and Ishwor Thapa{{/text.subhead}}
+        {{/title.text}}
+
+      {{/card.title}}
+      {{#card.actions}}
+        {{#paper-button iconButton=true}}{{paper-icon "favorite"}}{{/paper-button}}
+        {{#paper-button iconButton=true}}{{paper-icon "share"}}{{/paper-button}}
+      {{/card.actions}}
+    {{/paper-card}}
+  </div>
+  {{#paper-form class="layout-column flex" onSubmit=(action "geneformSubmit") as |form|}}
+    {{#paper-card class="landing-page-card" as |card|}}
+      {{#card.title as |title|}}
+        {{#title.text as |text|}}
+          {{#text.headline}}Enrichment Visualization Parameters{{/text.headline}}
+        {{/title.text}}
+      {{/card.title}}
+      {{#card.content}}
+        <div class="layout-row">
+          <div class="layout-column flex">
+            {{paper-input textarea=true block=true label="Genes" passThru=(hash rows=5 maxRows=5) value=genelist required=true onChange=(action (mut genelist)) customValidations=genelistValidation}}
+          </div>
+        </div>
+        <div class="layout layout-align-center-center slider-container">
+          <span style="margin-right: 16px;">p-value threshold</span>
+          {{paper-slider class="flex" min=0 max=100 discrete=true steps=2 value=pvalueslider onChange=(action "updatePValueSlider")}}
+          {{paper-input value=pvaluethreshold onChange=(action "updatePValue")}}
+        </div>
+        <div class="layout-row">
+          {{#form.submit-button raised=true primary=true disabled=form.isInvalid}}Submit{{/form.submit-button}}
+        </div>
+      {{/card.content}}
+    {{/paper-card}}
+  {{/paper-form}}
+</div>
