@@ -74,7 +74,7 @@ export default Component.extend(ResizeAware,{
   toggleLinkforce: Ember.observer('linkforce', function(){
     if(!this.get('updating')) {
       this.updateLinkForces(this);
-      simulation.alpha(.3).restart();
+      this.get('simulation').alpha(.3).restart();
       this.simulationticked(this);
     }
   }),
@@ -183,7 +183,6 @@ export default Component.extend(ResizeAware,{
     Updates the position of each object in each layer as the simulation runs.
   */
   simulationticked(){
-    var context = this;
     this.get('linklayer').selectAll('line').attr("x1", function(d) { return d.source.x; })
         .attr("y1", function(d) { return d.source.y; })
         .attr("x2", function(d) { return d.target.x; })
@@ -292,10 +291,8 @@ export default Component.extend(ResizeAware,{
     var context = this;
 
     // Retrieve SVG Layers
-    var markerlayer = this.get('markerlayer');
     var linklayer = this.get('linklayer');
     var nodelayer = this.get('nodelayer');
-    var textlayer = this.get('textlayer');
     var simulation = this.get('simulation');
     simulation.stop();
     var graph = {nodes: this.get('_nodes'), links: this.get('_links')};
@@ -342,8 +339,6 @@ export default Component.extend(ResizeAware,{
     Handles Zoom events by resizing all content in all affected layers
   */
   zoom() {
-    var context = this;
-
     // create new scale ojects based on event
     var new_xScale = d3.event.transform.rescaleX(this.get('xAxisScale'));
     var new_yScale = d3.event.transform.rescaleY(this.get('yAxisScale'));

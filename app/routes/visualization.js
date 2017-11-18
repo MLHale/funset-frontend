@@ -22,45 +22,35 @@ export default Route.extend({
   },
   model(params){
     var _this = this;
-    console.log(params);
-    Ember.$.getJSON(config.host+'/api/v1/runs/invoke?genes='+encodeURIComponent(params.geneids)+"&pvalue="+encodeURIComponent(params.pvalue)).then(function(run){
-      console.log(run);
-      _this.set('termstoload', run.data.relationships.enrichments.data.length);
-      run.data.type = 'run';
 
+    // Invoke the GOUtil function and wait to receive a 'run' model with the enrichment data
+    Ember.$.getJSON(config.host+'/api/v1/runs/invoke?genes='+encodeURIComponent(params.geneids)+"&pvalue="+encodeURIComponent(params.pvalue)).then(function(run){
+
+      // Total terms that will need to be loaded
+      _this.set('termstoload', run.data.relationships.enrichments.data.length);
+
+      run.data.type = 'run';//ember data expects raw JSONAPI data to be typed singular for push
       var loadedrun = _this.store.push(run);
+
+      // Load related enrichment and term records connected to the run
       run.data.relationships.enrichments.data.forEach(function(enrichment){
         _this.store.findRecord('enrichment',enrichment.id).then(function(enrichment){
+          // Enrichment model loaded, now load the term
           enrichment.get('term').then(function(term){
+
+            // Term model loaded, hash both together and send to the loading queue
             _this.get('loadingqueue').pushObject({'enrichment': enrichment, 'term': term});
           })
         });
       })
+      // Load meta data about the full Gene Ontology
       Ember.$.getJSON(config.host+'/api/v1/terms/get_pages').then(function(result){
         _this.set('termcount',result.data.count);
       })
-      // loadedrun.get('enrichments').forEach(function(enrichment){
-      //   console.log(enrichment);
-      //   enrichment.get('term').then(function(term){
-      //     console.log(term);
-      //   });
-      // });
     });
+    
+    // Prepare an empty array for the controller to use
     return Ember.ArrayProxy.create({content: Ember.A([])})
-    // this.store.query('run', {geneids:params.geneids});
-    // Ember.$.getJSON(config.host+'/api/v1/terms/get_pages').then(function(result){
-    //   _this.set('termcount',result.data.count);
-    //   _this.set('pages',result.data.pages);
-    //   if (result.data.pages >= 1){
-    //     // for (var i = 1; i <= result.data.pages; i++) {
-    //     for (var i = 1; i <= 1; i++) {//get 100 terms
-    //         _this.store.query('term', {page: i}).then(function(pageresults){
-    //           _this.get('loadingqueue').pushObjects(pageresults.content);
-    //         });
-    //     }
-    //   }
-    // });
-    // return this.store.peekAll('term');
   },
   setupController(controller,model){
     this._super(controller, model);
