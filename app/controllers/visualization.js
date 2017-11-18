@@ -11,8 +11,9 @@ export default Controller.extend({
   }),
   links: Ember.ArrayProxy.create({content: Ember.A([])}), //links maintained by d3 term-ontology component
   loadtermnodes: Ember.ArrayProxy.create({content: Ember.A([])}),//nodes to be loaded in the visualization
-  termsloaded: Ember.computed('route.termstoload', 'model.length', function(){
-    return this.get('model.length')===this.get('route.termstoload');
+  percenttermsloaded: Ember.computed('route.termstoload', 'model.length', function(){
+    var loaded = 100*(this.get('model.length')/this.get('route.termstoload'));
+    return loaded ? loaded : 0;
   }),
   renderEventQueue: Ember.ArrayProxy.create({content: Ember.A()}),
   processQueue: Ember.observer('route.loadingqueue.@each', function(){

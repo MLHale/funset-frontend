@@ -1,13 +1,15 @@
+
 <div class="layout-row layout-sm-column">
   {{#paper-card class="flex term-ontology-card" as |card|}}
     {{#card.content class="layout-row layout-align-space-between flex-100 term-ontology-graph-container"}}
-      {{!-- {{#if termsloaded}}
-        {{paper-progress-circular}}
-      {{else}} --}}
-        {{term-ontology nodes=model termloadingqueue=loadtermnodes labels=showTermLabels linkforce=linkForce renderEventQueue=renderEventQueue}}
-      {{!-- {{/if}} --}}
+
+      {{term-ontology nodes=model termloadingqueue=loadtermnodes labels=showTermLabels linkforce=linkForce renderEventQueue=renderEventQueue}}
     {{/card.content}}
   {{/paper-card}}
+  {{#unless (eq percenttermsloaded 100)}}
+    {{paper-progress-circular value=percenttermsloaded}}<br>
+    {{percenttermsloaded}}
+  {{/unless}}
   <div class="layout-column flex-gt-sm-50 flex-gt-md-40 flex-gt-lg-30 termlist">
     {{#paper-card}}
       {{#paper-toolbar accent=true}}
