@@ -11,8 +11,8 @@ export default Controller.extend({
   /*
     Returns a sorted ArrayProxy based on the underlying model (nodes).
   */
-  sortedNodes: Ember.computed('model.@each', function(){
-    return this.get('model').sortBy('enrichment.pvalue')
+  sortedNodes: Ember.computed('model.@each', 'model.@each.selected', function(){
+    return this.get('model').sortBy('enrichment.level')
   }),
 
   links: Ember.ArrayProxy.create({content: Ember.A([])}), //links maintained by d3 term-ontology component
@@ -80,13 +80,15 @@ export default Controller.extend({
     /*
       Handle term selections by dispatching an event of a particular type to the underlying graph component
     */
-    toggleSelectedTerm(term){
-      var event = {type: '', node: term}
-      if (term.get('selected')){
-        term.set('selected', false);
+    toggleSelectedTerm(node){
+      var event = {type: ''}
+      if (node.selected){
+        node.selected = false;
+        node.enrichment.set('selected', false);
         event.type = 'deselectednode';
       } else{
-        term.set('selected', true);
+        node.selected = true;
+        node.enrichment.set('selected', true);
         event.type = 'selectednode';
       }
       this.get('renderEventQueue').addObject(event);

@@ -38,13 +38,11 @@ export default Component.extend(ResizeAware,{
     var event = renderEventQueue.get('firstObject');
     if(renderEventQueue.get('length')>0&&event.type!==null){
       if (event.type === 'selectednode'){
-        this.get('nodes').findBy('id', event.node.get('termid')).selected = true;
         var node_objects= this.get('nodelayer').selectAll("circle").data(this.get('_nodes'), function(d) { return d.id;});
 
         node_objects.attr("class", function(d){return d.selected ? d.group + ' selected' : d.group});
       }
       else if (event.type === 'deselectednode'){
-        this.get('nodes').findBy('id', event.node.get('termid')).selected = false;
         var node_objects= this.get('nodelayer').selectAll("circle").data(this.get('_nodes'), function(d) { return d.id;});
 
         node_objects.attr("class", function(d){return d.selected ? d.group + ' selected' : d.group});
@@ -300,6 +298,7 @@ export default Component.extend(ResizeAware,{
     // Setup nodes in the graph, entering a new svg circle of radius enrichment.level for each node. Each node also has a handler for drag events
     var node_objects= nodelayer.selectAll("circle").data(graph.nodes, function(d) { return d.id;});
     node_objects.enter().append("circle").attr("r", function(d){return d.enrichment.get('level')})
+        .on('click', context.clicked)
         .call(d3.drag()
             .on("start", (d, i) => context.dragstarted(d, i, context))
             .on("drag", (d, i) => context.dragged(d, i, context))
@@ -354,6 +353,11 @@ export default Component.extend(ResizeAware,{
     this.get('linklayer').selectAll('line').attr("transform", d3.event.transform);
     this.get('textlayer').selectAll('text').attr("transform", d3.event.transform);
 
+  },
+  clicked(d, i){
+    d.selected = d.selected ? false : true;
+    d.enrichment.set('selected',!d.enrichment.get('selected'))
+    d3.select(this).attr("class", function(d){return d.selected ? d.group + ' selected' : d.group});
   },
   /*
     Handles drag `start` events on nodes by logging starting position of the node d being acted upon by a d3 event.

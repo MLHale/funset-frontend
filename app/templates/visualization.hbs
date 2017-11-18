@@ -53,8 +53,8 @@
       {{#paper-list class="scrollabletermlist"}}
         {{#paper-subheader}}Terms{{/paper-subheader}}
           {{#each sortedNodes as |node|}}
-            {{#paper-item class="md-3-line" onClick=(action "toggleSelectedTerm" node.term) as |controls|}}
-              {{paper-icon "title" class=(concat "md-avatar-icon" (if node.term.selected " term-selected"))}}
+            {{#paper-item class="md-3-line" onClick=(action "toggleSelectedTerm" node) as |controls|}}
+              {{paper-icon "title" class=(concat "md-avatar-icon" (if node.enrichment.selected " term-selected"))}}
               <div class="md-list-item-text">
                 <h3>
                   <strong>{{node.term.termid}} [p={{node.enrichment.pvalue}},l={{node.enrichment.level}}]</strong>
