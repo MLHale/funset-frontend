@@ -16,7 +16,7 @@ export default Component.extend(ResizeAware,{
   noderadius: 8,
   simulationdistance: 100,
   simulationstrength: 0.5,
-  simulationrepulsiveforce: -10,
+  simulationrepulsiveforce: -40,
 
   attributeBindings: ['width', 'height'],
   labels: false,
@@ -61,7 +61,7 @@ export default Component.extend(ResizeAware,{
       });
       if(!context.get('updating')) {
         context.set('updating', true);
-        Ember.run.scheduleOnce('render', this, this.update);
+        Ember.run.scheduleOnce('render', this, this.renderGraph);
       }
     }
   }),
@@ -73,11 +73,14 @@ export default Component.extend(ResizeAware,{
   }),
   toggleLinkforce: Ember.observer('linkforce', function(){
     if(!this.get('updating')) {
-      // this.set('updating', true);
       this.updateLinkForces(this);
+      simulation.alpha(.3).restart();
       this.simulationticked(this);
     }
   }),
+  /*
+   Turns text labels on or off and re-renders them depending on the toggle parameter `labels`
+  */
   updateTextLabels(){
     var graph = {nodes: this.get('_nodes'), links: this.get('_links')};
     var textlayer = this.get('textlayer');
@@ -85,8 +88,8 @@ export default Component.extend(ResizeAware,{
     if(this.get('labels')){
       text_objects = textlayer.selectAll("text").data(graph.nodes, function(d) { return d.id;});
       text_objects.enter().append("svg:text")
-        .attr("x", 8)
-        .attr("y", ".31em")
+        .attr("x", function(d) { return d.x + d.enrichment.get('level')+5; })
+        .attr("y", function(d) { return d.y + d.enrichment.get('level')/2; })
         .text(function(d) { return d.id; });
 
     } else{
@@ -94,6 +97,9 @@ export default Component.extend(ResizeAware,{
         text_objects.exit().remove();
     }
   },
+  /*
+    Turns link forces on or off and re-renders them depending on the toggle parameter `linkforce`
+  */
   updateLinkForces(){
     var context = this;
     var graph = {nodes: this.get('_nodes'), links: this.get('_links')};
@@ -113,16 +119,20 @@ export default Component.extend(ResizeAware,{
         .distance(function(d) { return Math.pow(Math.pow(d.source.x-d.target.x,2) + Math.pow(d.source.y-d.target.y,2), 1/2) })
         .strength(context.get('simulationstrength')));
     }
-    simulation.alpha(.3).restart();
   },
+  /*
+    Resizes the component (and svg) when the window size changes
+  */
   didResize(event){
-    //console.log(`Window resized: width: ${window.innerWidth}, height: ${window.innerHeight}`);
     var svg = d3.select("svg");
     var width = this.set('width',this.$().parents('md-card-content').width());
     var height = this.set('height',this.$().parents('md-card-content').height());
-    console.log(`New SVG size: width: ${width}, height: ${height}`);
+
+    // Update svg size
     svg.attr("width", width);
     svg.attr("height", height);
+
+    // Update axis scale to reflect the changes
     var xAxisScale = this.set('xAxisScale', d3.scaleLinear()
       .domain([-width/2,width/2])
       .range([0,width]));
@@ -134,11 +144,45 @@ export default Component.extend(ResizeAware,{
     this.get('xaxislayer').call(this.get('xAxis').scale(xAxisScale));
     this.get('yaxislayer').call(this.get('yAxis').scale(yAxisScale));
 
+    // Re-center the axis labels
+    this.updateAxisLabels()
+
+  },
+  /*
+    Places centered axis labels with an occluding text box on each axis
+  */
+  updateAxisLabels(){
+    var axislabellayer = this.get('axislabellayer');
+    axislabellayer.selectAll('*').remove();
+    //x-axis label
+    axislabellayer.append("rect")
+      .attr("transform","translate(" + (((this.get('width')+62)/2)-132) + " ," + -2 + ")")
+      .attr("width", 260)
+      .attr("height", 20)
+      .style("fill","#FFF")
+
+    axislabellayer.append('text')
+      .attr("transform","translate(" + ((this.get('width')+62)/2) + " ," + 14 + ")")
+      .style("text-anchor", "middle")
+      .text("Multi-dimensional Scaling (pixels)");
+
+    //y-axis label
+    axislabellayer.append("rect")
+      .attr("transform","translate(" + 0 + " ," + ((this.get('height')/2)+132)+ ") rotate(-90) ")
+      .attr("width", 260)
+      .attr("height", 20)
+      .style("fill","#FFF")
+
+    axislabellayer.append('text')
+      .attr("transform","translate(" + 15 + " ," + (this.get('height')/2) + ") rotate(-90) ")
+      .style("text-anchor", "middle")
+      .text("Multi-dimensional Scaling (pixels)");
   },
 
-
+  /*
+    Updates the position of each object in each layer as the simulation runs.
+  */
   simulationticked(){
-    // var radius = this.get('noderadius');;
     var context = this;
     this.get('linklayer').selectAll('line').attr("x1", function(d) { return d.source.x; })
         .attr("y1", function(d) { return d.source.y; })
@@ -149,48 +193,31 @@ export default Component.extend(ResizeAware,{
         .attr("cx", function(d) { return d.x;  })
         .attr("cy", function(d) { return d.y; });
 
-    this.get('textlayer').selectAll('text').attr("transform", function(d) {
-      return "translate(" + d.x + "," + d.y + ")"+" scale("+context.get('currentScaleFactorX')+","+context.get('currentScaleFactorY')+")";
-    });
-  },
-  zoom() {
-    var context = this;
-    // console.log('zooming');
-    // create new scale ojects based on event
-    var new_xScale = d3.event.transform.rescaleX(this.get('xAxisScale'));
-    var new_yScale = d3.event.transform.rescaleY(this.get('yAxisScale'));
-    this.set('currentScaleFactorX',d3.event.transform.k)
-    this.set('currentScaleFactorY',d3.event.transform.k);
+    this.get('textlayer').selectAll("text")
+        .attr("x", function(d) { return d.x + d.enrichment.get('level')+5; })
+        .attr("y", function(d) { return d.y + d.enrichment.get('level')/2; })
 
-    // update axes
-    this.get('xaxislayer').call(this.get('xAxis').scale(new_xScale));
-    this.get('yaxislayer').call(this.get('yAxis').scale(new_yScale));
-
-    // update node zoom
-    this.get('nodelayer').selectAll('circle').attr("transform", d3.event.transform);
-    this.get('linklayer').selectAll('line').attr("transform", d3.event.transform);
-    // this.get('textlayer').selectAll('text').attr("transform", d3.event.transform);
-    this.get('textlayer').selectAll('text').attr("transform", function(d) {
-      return "translate(" + d3.event.translate + ")"+" scale("+context.get('currentScaleFactorX')+","+context.get('currentScaleFactorY')+")";
-    });
-    // var simulation = this.get('simulation');
-    // simulation.alpha(.1).restart();
   },
+  /*
+    Setup the component by initializing graph layers and initially rendering. This method is called when the component is first inserted in the DOM.
+  */
   didInsertElement() {
     var context = this;
-    this.get('resizeService').on('debouncedDidResize', event => context.didResize(event, context));//register component resize event handler
+
+    // register component resize event handler
+    this.get('resizeService').on('debouncedDidResize', event => context.didResize(event, context));
+
+    // prepare svg for setup
     var width = this.set('width',this.$().parents('md-card-content').width());
     var height = this.set('height',this.$().parents('md-card-content').height());
-
-    var zoom = d3.zoom()
-        .on("zoom", ()=>context.zoom(context));
-
     var svg = d3.select("svg");
     svg.attr("width", this.get('width'));
     svg.attr("height", this.get('width'));
-    svg.call(zoom);
 
-    //setup simulation forces (how the graph moves)
+    // setup zoom handler
+    var zoom = d3.zoom().on("zoom", ()=>context.zoom(context));
+
+    // setup simulation forces (how the graph moves)
     var simulation = d3.forceSimulation()
         .alphaMin(0.00001)
         // .force("link", d3.forceLink().id(function(d) { return d.id; }).distance(context.get('simulationdistance')).strength(context.get('simulationstrength')))
@@ -198,9 +225,26 @@ export default Component.extend(ResizeAware,{
         // .force("center", d3.forceCenter(width / 2, height / 2))
         .velocityDecay(.45)
         .on("tick", ()=> Ember.run.scheduleOnce('render', context, context.simulationticked));
+
     this.set('simulation', simulation);
 
-    // create scale objects
+    /*
+      -----------------------------------------
+      Prepare layers in SVG for later rendering.
+      -> Layers are rendered in order.
+      -----------------------------------------
+    */
+
+    // Layer for arrow heads on edges (markers)
+    this.set('markerlayer', svg.append("g").attr("class", "marker-layer"));
+
+    // Layer for edges in the graph
+    this.set('linklayer', svg.append("g").attr("class", "link-layer"));
+
+    // Layer for node labels in the graph
+    this.set('textlayer', svg.append("g").attr("class", "text-layer"));
+
+    // Axes setup
     var xAxisScale = this.set('xAxisScale', d3.scaleLinear()
       .domain([-width/2,width/2])
       .range([0,width]));
@@ -212,70 +256,52 @@ export default Component.extend(ResizeAware,{
     // create axis objects
     var xAxis = this.set('xAxis', d3.axisBottom(xAxisScale));
     var yAxis = this.set('yAxis', d3.axisLeft(yAxisScale));
-    // Draw Axis
+
+    // Setup and Draw Axis layers
     this.set('xaxislayer',svg.append("g")
         .attr("class", "axis xaxis-layer")
-        .attr("transform", "translate(40," + 0+ ")")
+        .attr("transform", "translate(62," + 20+ ")")
         .call(xAxis));
 
     this.set('yaxislayer', svg.append("g")
         .attr("class", "axis yaxis-layer")
-        .attr("transform", "translate(40," + 0+ ")")
+        .attr("transform", "translate(62," + 0+ ")")
         .call(yAxis));
 
-    //zoom view layer
+    // Layer for zoom bounding box
     svg.append("rect")
       .attr("class", "zoom")
       .attr("width", width)
       .attr("height", height)
       .call(zoom);
 
-    //markers for lines
-    this.set('markerlayer', svg.append("g").attr("class", "marker-layer"));
-
-    this.set('linklayer', svg.append("g").attr("class", "link-layer"));
-
+    // Layer for nodes in the graph
     this.set('nodelayer', svg.append("g").attr("class", "node-layer"));
 
-    this.set('textlayer', svg.append("g").attr("class", "text-layer"));
+    // Layer for axis labels
+    this.set('axislabellayer',svg.append("g").attr("class", "axislabel-layer"));
+    this.updateAxisLabels()
 
-    // Schedule a call to update the graph
-    Ember.run.scheduleOnce('render', this, this.update);
+    // Schedule a call to render the graph
+    Ember.run.scheduleOnce('render', this, this.renderGraph);
   },
-  update() {
-
-    var simulation = this.get('simulation');
-    simulation.stop();
+  /*
+    Render the graph by updating each layer to reflect changes in the underlying bound data
+  */
+  renderGraph() {
     var context = this;
 
+    // Retrieve SVG Layers
     var markerlayer = this.get('markerlayer');
     var linklayer = this.get('linklayer');
     var nodelayer = this.get('nodelayer');
     var textlayer = this.get('textlayer');
-
+    var simulation = this.get('simulation');
+    simulation.stop();
     var graph = {nodes: this.get('_nodes'), links: this.get('_links')};
 
-    //setup the marker layer (arrowheads)
-    var marker_objects = markerlayer.selectAll("marker").data(["dotted", "solid"]);
-    marker_objects.enter().append("marker")
-        .attr("id", String)
-        .attr("viewBox", "0 -5 10 10")
-        .attr("refX", 12)
-        .attr("markerWidth", 10)
-        .attr("markerHeight", 10)
-        .attr("orient", "auto")
-      .append("svg:path")
-        .attr("d", "M0,-5L10,0L0,5");
-
-    marker_objects.exit().remove();
-    //
-    //Setup edges and draw them on the graph - attaching a new svg line for each edge
-
-
-    //update nodes in the graph, entering a new svg circle of radius r for each node. Each node also has a handler for drag events
+    // Setup nodes in the graph, entering a new svg circle of radius enrichment.level for each node. Each node also has a handler for drag events
     var node_objects= nodelayer.selectAll("circle").data(graph.nodes, function(d) { return d.id;});
-    //need to figure out why exit is occilating, disabled for now
-    // node_objects.exit().remove();
     node_objects.enter().append("circle").attr("r", function(d){return d.enrichment.get('level')})
         .call(d3.drag()
             .on("start", (d, i) => context.dragstarted(d, i, context))
@@ -283,66 +309,78 @@ export default Component.extend(ResizeAware,{
             .on("end", (d, i) => context.dragended(d, i, context)))
         .attr("class", function(d){return d.selected ? d.group + ' selected' : d.group});
 
+    // Setup edges and draw them on the graph - attaching a new svg line for each edge
     var link_objects = linklayer.selectAll("line").data(graph.links);
     link_objects.enter().append("line")
       .attr("class", function(d) { return "link " + d.type; })
       .attr("marker-end", function(d) { return "url(#" + d.type + ")"; });
 
     link_objects.exit().remove();
-    //update text labels, each node should have a label corresponding to its id
-    var text_objects;
-    if(this.get('labels')){
-      text_objects = textlayer.selectAll("text").data(graph.nodes, function(d) { return d.id;});
-      text_objects.enter().append("svg:text")
-        .attr("x", 8)
-        .attr("y", ".31em")
-        .text(function(d) { return d.id; });
 
-    } else{
-        text_objects = textlayer.selectAll("text").data({}, function(d) { return d.id;});
-        text_objects.exit().remove();
-    }
+    // Setup text labels. If enabled each node should have a label corresponding to its id
+    this.updateTextLabels();
 
-    //update nodes and link data in the simulation
+    // Update the simulation to refresh its data
     simulation.nodes(graph.nodes);
-    if(this.get('linkforce')){
-      simulation.force("link", d3.forceLink()
-        .links(graph.links)
-        .id(function(d) { return d.id; })
-        .distance(context.get('simulationdistance'))
-        .strength(context.get('simulationstrength')));
-    }
-    else {
-      simulation.force("link", d3.forceLink()
-        .links(graph.links)
-        .id(function(d) { return d.id; })
-        .distance(function(d) { return Math.pow(Math.pow(d.source.x-d.target.x,2) + Math.pow(d.source.y-d.target.y,2), 1/2) })
-        .strength(context.get('simulationstrength')));
-    }
+
+    // Turn on link forces if link forces are enabled
+    this.updateLinkForces()
     this.set('updating', false);
+
+    // Force the graph to update using tick function
     simulation.alpha(1).restart();
-    // simulation.restart();
-    // console.log('update finished');
   },
+  /*
+    Teardown component
+  */
   willDestroyElement(){
     //clear bound node data before destroying
     this.get('nodes').clear();
     this._super(...arguments);
   },
-  dragstarted (d, i) {
-    //log starting position on element d when acted upon by a d3 event
-    //see https://github.com/d3/d3-force#simulation_nodes
+  /*
+    Handles Zoom events by resizing all content in all affected layers
+  */
+  zoom() {
+    var context = this;
 
+    // create new scale ojects based on event
+    var new_xScale = d3.event.transform.rescaleX(this.get('xAxisScale'));
+    var new_yScale = d3.event.transform.rescaleY(this.get('yAxisScale'));
+    this.set('currentScaleFactorX',d3.event.transform.k)
+    this.set('currentScaleFactorY',d3.event.transform.k);
+
+    // Update axes to reflect the new scale
+    this.get('xaxislayer').call(this.get('xAxis').scale(new_xScale));
+    this.get('yaxislayer').call(this.get('yAxis').scale(new_yScale));
+
+    // Transform each object in each layer to be zoomed according to the new scale
+    this.get('nodelayer').selectAll('circle').attr("transform", d3.event.transform);
+    this.get('linklayer').selectAll('line').attr("transform", d3.event.transform);
+    this.get('textlayer').selectAll('text').attr("transform", d3.event.transform);
+
+  },
+  /*
+    Handles drag `start` events on nodes by logging starting position of the node d being acted upon by a d3 event.
+    see https://github.com/d3/d3-force#simulation_nodes and https://github.com/d3/d3-drag#drag_on
+  */
+  dragstarted (d, i) {
     if (!d3.event.active) this.get('simulation').alphaTarget(0.3).restart();
     d.fx = d.x;
     d.fy = d.y;
   },
+  /*
+    Handles `drag` events on nodes by updating the position of the node d being acted upon by a d3 event.
+    see https://github.com/d3/d3-force#simulation_nodes and https://github.com/d3/d3-drag#drag_on
+  */
   dragged (d, i) {
-    //handle a drag event by setting the element d's position to the new x,y position identified by the event
     d.fx = d3.event.x;
     d.fy = d3.event.y;
   },
-
+  /*
+    Handles drag `end` events on nodes by nullifying the temporary position of the node d being acted upon by a d3 event.
+    see https://github.com/d3/d3-force#simulation_nodes and https://github.com/d3/d3-drag#drag_on
+  */
   dragended (d, i) {
     //clear effect (fx) params when the event ends
     if (!d3.event.active) this.get('simulation').alphaTarget(0);
