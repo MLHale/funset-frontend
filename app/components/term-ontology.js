@@ -53,8 +53,10 @@ export default Component.extend(ResizeAware,{
     renderEventQueue.popObject();
   }),
   updateNodes: Ember.observer('termloadingqueue.@each', function(){
-    var scalefactor = 1000;
-    var center = 500;
+    var scalefactorx = this.get('width');
+    var centerx = scalefactorx/2;
+    var scalefactory = this.get('height');
+    var centery = scalefactory/2;
     var _this = this;
     if(this.get('termloadingqueue.length')>0){
       this.get('termloadingqueue.content').forEach(function(enrichmentterm){
@@ -65,8 +67,8 @@ export default Component.extend(ResizeAware,{
           group: 'enrichment',
           term: term,
           enrichment: enrichment,
-          x: term.get('semanticdissimilarityx')*scalefactor+center,
-          y: term.get('semanticdissimilarityy')*scalefactor+center,
+          x: term.get('semanticdissimilarityx') ? term.get('semanticdissimilarityx')*scalefactorx+centerx : centerx,
+          y: term.get('semanticdissimilarityy') ? term.get('semanticdissimilarityy')*scalefactory+centery : centery,
         });
         //add parent nodes and an edge to each one
 
@@ -220,8 +222,9 @@ export default Component.extend(ResizeAware,{
     // update node zoom
     this.get('nodelayer').selectAll('circle').attr("transform", d3.event.transform);
     this.get('linklayer').selectAll('line').attr("transform", d3.event.transform);
+    // this.get('textlayer').selectAll('text').attr("transform", d3.event.transform);
     this.get('textlayer').selectAll('text').attr("transform", function(d) {
-      return "translate(" + d.x + "," + d.y + ")"+" scale("+context.get('currentScaleFactorX')+","+context.get('currentScaleFactorY')+")";
+      return "translate(" + d3.event.translate + ")"+" scale("+context.get('currentScaleFactorX')+","+context.get('currentScaleFactorY')+")";
     });
     // var simulation = this.get('simulation');
     // simulation.alpha(.1).restart();
@@ -326,7 +329,7 @@ export default Component.extend(ResizeAware,{
     var node_objects= nodelayer.selectAll("circle").data(graph.nodes, function(d) { return d.id;});
     //need to figure out why exit is occilating, disabled for now
     // node_objects.exit().remove();
-    node_objects.enter().append("circle").attr("r", this.get('noderadius'))
+    node_objects.enter().append("circle").attr("r", function(d){console.log(d);return d.enrichment.get('level')})
         .call(d3.drag()
             .on("start", (d, i) => context.dragstarted(d, i, context))
             .on("drag", (d, i) => context.dragged(d, i, context))
@@ -371,7 +374,8 @@ export default Component.extend(ResizeAware,{
         .strength(context.get('simulationstrength')));
     }
     this.set('updating', false);
-    simulation.restart();
+    simulation.alpha(1).restart();
+    // simulation.restart();
     // console.log('update finished');
   },
   dragstarted (d, i) {

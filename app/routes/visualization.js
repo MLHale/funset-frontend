@@ -17,6 +17,7 @@ export default Route.extend({
     console.log(params);
     Ember.$.getJSON(config.host+'/api/v1/runs/invoke?genes='+encodeURIComponent(params.geneids)+"&pvalue="+encodeURIComponent(params.pvalue)).then(function(run){
       console.log(run);
+      _this.set('termstoload', run.data.relationships.enrichments.data.length);
       run.data.type = 'run';
 
       var loadedrun = _this.store.push(run);

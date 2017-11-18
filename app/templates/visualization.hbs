@@ -1,7 +1,11 @@
 <div class="layout-row layout-sm-column">
   {{#paper-card class="flex term-ontology-card" as |card|}}
     {{#card.content class="layout-row layout-align-space-between flex-100 term-ontology-graph-container"}}
-      {{term-ontology nodes=model termloadingqueue=loadtermnodes labels=showTermLabels linkforce=linkForce renderEventQueue=renderEventQueue}}
+      {{!-- {{#if termsloaded}}
+        {{paper-progress-circular}}
+      {{else}} --}}
+        {{term-ontology nodes=model termloadingqueue=loadtermnodes labels=showTermLabels linkforce=linkForce renderEventQueue=renderEventQueue}}
+      {{!-- {{/if}} --}}
     {{/card.content}}
   {{/paper-card}}
   <div class="layout-column flex-gt-sm-50 flex-gt-md-40 flex-gt-lg-30 termlist">
@@ -9,7 +13,8 @@
       {{#paper-toolbar accent=true}}
         {{#paper-toolbar-tools}}
           <h5>
-            Exploring {{model.length}} terms<br>
+            Exploring {{route.termstoload}} terms<br>
+            {{#unless termsloaded}}Loaded:{{mult 100 (div model.length route.termstoload)}}% of terms<br>{{/unless}}
             Total Terms in Ontology: {{route.termcount}}
           </h5>
         {{/paper-toolbar-tools}}
@@ -42,7 +47,7 @@
               {{paper-icon "title" class=(concat "md-avatar-icon" (if node.term.selected " term-selected"))}}
               <div class="md-list-item-text">
                 <h3>
-                  <strong>{{node.term.termid}} ({{node.enrichment.pvalue}})</strong>
+                  <strong>{{node.term.termid}} [p={{node.enrichment.pvalue}},l={{node.enrichment.level}}]</strong>
                 </h3>
                 <h4>{{node.term.name}}</h4>
                 <p>
