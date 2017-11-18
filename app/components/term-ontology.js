@@ -324,6 +324,11 @@ export default Component.extend(ResizeAware,{
     // simulation.restart();
     // console.log('update finished');
   },
+  willDestroyElement(){
+    //clear bound node data before destroying
+    this.get('nodes').clear();
+    this._super(...arguments);
+  },
   dragstarted (d, i) {
     //log starting position on element d when acted upon by a d3 event
     //see https://github.com/d3/d3-force#simulation_nodes

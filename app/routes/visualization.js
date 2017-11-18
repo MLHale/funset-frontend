@@ -11,8 +11,15 @@ export default Route.extend({
       refreshModel: true
     }
   },
-  termstoload: 1,
+  termstoload: 0,
+  termcount: 0,
   loadingqueue: Ember.ArrayProxy.create({ content: Ember.A() }),
+  beforeModel(){
+    //reset loading variables that control the interface
+    this.get('loadingqueue').clear();
+    this.set('termstoload',0);
+    this.set('termcount',0);
+  },
   model(params){
     var _this = this;
     console.log(params);

@@ -1,9 +1,26 @@
 @import 'ember-paper';
 
+.footer {
+  padding: 0px 8px 8px 8px;
+}
+
+.credit {
+  color: #999;
+}
+
 .landing-page-card {
   height: 100% !important;
 }
+// .landing-page-container {
+//   height: 90vh;
+// }
+.landing-page-logo {
+  padding: 24px 16px 16px;
+}
 
+.loading-text {
+  margin-right: 10px;
+}
 .link-layer line {
   stroke: #aaa;
   stroke-width: 1.5px;

@@ -4,9 +4,13 @@
     {{#card.content class="layout-row layout-align-space-between flex-100 term-ontology-graph-container"}}
       {{#unless (eq percenttermsloaded 100)}}
         <div class="layout-row flex layout-align-center-center">
-          <div class="loadingtext">Loading terms...</div>
+
           {{#if (gte percenttermsloaded 2)}}
-            {{paper-progress-circular value=percenttermsloaded diameter=180}}
+            <div class="loading-text">Loading terms...</div>
+            {{paper-progress-circular warn=true value=percenttermsloaded diameter=180}}
+          {{else}}
+            <div class="loading-text">Fetching Data...</div>
+            {{paper-progress-circular warn=true diameter=180}}
           {{/if}}
         </div>
       {{else}}

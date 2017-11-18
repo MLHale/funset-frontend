@@ -1,69 +1,82 @@
-{{#paper-toolbar}}
-  {{#paper-toolbar-tools}}
-    {{#paper-menu as |menu|}}
-      {{#menu.trigger}}
-        {{#paper-button iconButton=true}}
-          {{paper-icon "menu"}}
-        {{/paper-button}}
-      {{/menu.trigger}}
-      {{#menu.content width=4 class="main-app-menu" as |content|}}
-        {{#content.menu-item onClick="openDialog"}}
-          {{paper-icon "help"}}
-          <span>Instructions for using this app</span>
+<div class="container">
+  {{#paper-toolbar}}
+    {{#paper-toolbar-tools}}
+      {{#paper-menu as |menu|}}
+        {{#menu.trigger}}
+          {{#paper-button iconButton=true}}
+            {{paper-icon "menu"}}
+          {{/paper-button}}
+        {{/menu.trigger}}
+        {{#menu.content width=4 class="main-app-menu" as |content|}}
+          {{#content.menu-item onClick="openDialog"}}
+            {{paper-icon "help"}}
+            <span>Instructions for using this app</span>
 
-        {{/content.menu-item}}
-        {{#content.menu-item onClick="openDialog"}}
-          {{paper-icon "info"}}
-          <span>About the authors</span>
-
-        {{/content.menu-item}}
-        {{#each menuitems as |item|}}
-          {{#content.menu-item onClick=(action "externalLink" item)}}
-            {{paper-icon item.icon}}
-              <span>{{item.title}}</span>
           {{/content.menu-item}}
-        {{/each}}
-      {{/menu.content}}
-    {{/paper-menu}}
-    <h2>
-      {{#link-to 'index'}}Pathway Enrichment Visualization{{/link-to}}
-    </h2>
-    <span class="flex"></span>
-{{!--
-    <h2>
-    {{#if auth.stored}}
-        {{auth.username}}{{#paper-button iconButton=true onClick=(action "toggleStored")}}{{paper-icon "person"}}{{/paper-button}}
-    {{else}}
-      {{paper-input label="Name" value=auth.username onChange=(action (mut auth.username)) onBlur=(action "login") class="name-entry-field"}}{{#paper-button iconButton=true onClick=(action "login")}}{{paper-icon "person"}}{{/paper-button}}
-    {{/if}}
-    </h2> --}}
+          {{#content.menu-item onClick="openDialog"}}
+            {{paper-icon "info"}}
+            <span>About the authors</span>
+
+          {{/content.menu-item}}
+          {{#each menuitems as |item|}}
+            {{#content.menu-item onClick=(action "externalLink" item)}}
+              {{paper-icon item.icon}}
+                <span>{{item.title}}</span>
+            {{/content.menu-item}}
+          {{/each}}
+        {{/menu.content}}
+      {{/paper-menu}}
+      <h2>
+        {{#link-to 'index'}}Pathway Enrichment Visualization{{/link-to}}
+      </h2>
+      <span class="flex"></span>
+  {{!--
+      <h2>
+      {{#if auth.stored}}
+          {{auth.username}}{{#paper-button iconButton=true onClick=(action "toggleStored")}}{{paper-icon "person"}}{{/paper-button}}
+      {{else}}
+        {{paper-input label="Name" value=auth.username onChange=(action (mut auth.username)) onBlur=(action "login") class="name-entry-field"}}{{#paper-button iconButton=true onClick=(action "login")}}{{paper-icon "person"}}{{/paper-button}}
+      {{/if}}
+      </h2> --}}
 
 
-  {{/paper-toolbar-tools}}
-{{/paper-toolbar}}
-{{#if showDialog}}
-  {{#paper-dialog class="flex-77" onClose=(action "closeDialog" "cancel") origin=dialogOrigin clickOutsideToClose=true}}
-    {{#paper-toolbar}}
-      {{#paper-toolbar-tools}}
-        <h2>Instructions for use (help menu)</h2>
-        <span class="flex"></span>
-        {{#paper-button iconButton=true onClick=(action "closeDialog" "cancel")}}{{paper-icon icon="close"}}{{/paper-button}}
-      {{/paper-toolbar-tools}}
-    {{/paper-toolbar}}
+    {{/paper-toolbar-tools}}
+  {{/paper-toolbar}}
+  {{#if showDialog}}
+    {{#paper-dialog class="flex-77" onClose=(action "closeDialog" "cancel") origin=dialogOrigin clickOutsideToClose=true}}
+      {{#paper-toolbar}}
+        {{#paper-toolbar-tools}}
+          <h2>Instructions for use (help menu)</h2>
+          <span class="flex"></span>
+          {{#paper-button iconButton=true onClick=(action "closeDialog" "cancel")}}{{paper-icon icon="close"}}{{/paper-button}}
+        {{/paper-toolbar-tools}}
+      {{/paper-toolbar}}
 
-    {{#paper-dialog-content}}
-      <h4>Help item 1</h4>
-      <p>
-        text goes here
+      {{#paper-dialog-content}}
+        <h4>Help item 1</h4>
+        <p>
+          text goes here
+        </p>
+        <h4>Help item 2</h4>
+        <p>
+          Text goes here
+        </p>
+      {{/paper-dialog-content}}
+    {{/paper-dialog}}
+  {{/if}}
+  {{paper-toaster}}
+  <div class="layout-row flex">
+    <div class="flex">{{outlet}}</div>
+  </div>
+  <div class="footer layout-row layout-align-space-between-end">
+    <div class="left-footer">
+      <p class="credit">
+        © 2017 Dr. Matthew Hale, Dr. Dario Ghersi
       </p>
-      <h4>Help item 2</h4>
-      <p>
-        Text goes here
-      </p>
-    {{/paper-dialog-content}}
-  {{/paper-dialog}}
-{{/if}}
-{{paper-toaster}}
-<div class="layout-row flex">
-  <div class="flex">{{outlet}}</div>
+    </div>
+    <div class="center-footer">
+    </div>
+    <div class="right-footer">
+    </div>
+  </div>
 </div>

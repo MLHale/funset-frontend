@@ -24,7 +24,6 @@ export default Controller.extend({
       //all terms have loaded
       var loadingqueue = this.get('route.loadingqueue');
       var width = Ember.$('.term-ontology-card').width();
-      console.log('width',width);
       var scalefactor = width;
       var center = scalefactor/2;
       var _this = this;

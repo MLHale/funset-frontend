@@ -1,20 +1,4 @@
-<div class="layout-row">
-  <div class="layout-column flex-30">
-    {{#paper-card class="landing-page-card" as |card|}}
-      {{card.image src=(concat rootURL "/img/uno-lockup-logo.png") alt="pathway_viz" title="pathway_viz"}}
-      {{#card.title as |title|}}
-        {{#title.text as |text|}}
-          {{#text.headline}}Welcome to Pathway Enrichment Visualization App{{/text.headline}}
-          {{#text.subhead}}By Matt Hale, Dario Ghersi, and Ishwor Thapa{{/text.subhead}}
-        {{/title.text}}
-
-      {{/card.title}}
-      {{#card.actions}}
-        {{#paper-button iconButton=true}}{{paper-icon "favorite"}}{{/paper-button}}
-        {{#paper-button iconButton=true}}{{paper-icon "share"}}{{/paper-button}}
-      {{/card.actions}}
-    {{/paper-card}}
-  </div>
+<div class="layout-row landing-page-container">
   {{#paper-form class="layout-column flex" onSubmit=(action "geneformSubmit") as |form|}}
     {{#paper-card class="landing-page-card" as |card|}}
       {{#card.title as |title|}}
@@ -39,4 +23,20 @@
       {{/card.content}}
     {{/paper-card}}
   {{/paper-form}}
+  <div class="layout-column layout-align-start-center flex-30">
+    {{#paper-card class="landing-page-card" as |card|}}
+      {{card.image class="landing-page-logo" src=(concat rootURL "/img/uno-lockup-logo.png") alt="pathway_viz" title="pathway_viz"}}
+      {{#card.title as |title|}}
+        {{#title.text as |text|}}
+          {{#text.headline}}Welcome to Pathway Enrichment Visualization App{{/text.headline}}
+          {{#text.subhead}}By Matt Hale, Dario Ghersi, and Ishwor Thapa{{/text.subhead}}
+        {{/title.text}}
+
+      {{/card.title}}
+      {{#card.actions}}
+        {{#paper-button iconButton=true}}{{paper-icon "favorite"}}{{/paper-button}}
+        {{#paper-button iconButton=true}}{{paper-icon "share"}}{{/paper-button}}
+      {{/card.actions}}
+    {{/paper-card}}
+  </div>
 </div>
