@@ -12,7 +12,7 @@ export default Controller.extend({
     Returns a sorted ArrayProxy based on the underlying model (nodes).
   */
   sortedNodes: Ember.computed('model.@each', 'model.@each.selected', function(){
-    return this.get('model').sortBy('enrichment.level')
+    return this.get('model').sortBy('enrichment.level').reverse()
   }),
 
   links: Ember.ArrayProxy.create({content: Ember.A([])}), //links maintained by d3 term-ontology component
