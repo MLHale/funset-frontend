@@ -52,59 +52,6 @@ export default Component.extend(ResizeAware,{
     }
     renderEventQueue.popObject();
   }),
-  updateNodes: Ember.observer('termloadingqueue.@each', function(){
-    var scalefactorx = this.get('width');
-    var centerx = scalefactorx/2;
-    var scalefactory = this.get('height');
-    var centery = scalefactory/2;
-    var _this = this;
-    if(this.get('termloadingqueue.length')>0){
-      this.get('termloadingqueue.content').forEach(function(enrichmentterm){
-        var term = enrichmentterm.term;
-        var enrichment = enrichmentterm.enrichment;
-        this.get('nodes').addObject({
-          id: term.get('termid'),
-          group: 'enrichment',
-          term: term,
-          enrichment: enrichment,
-          x: term.get('semanticdissimilarityx') ? term.get('semanticdissimilarityx')*scalefactorx+centerx : centerx,
-          y: term.get('semanticdissimilarityy') ? term.get('semanticdissimilarityy')*scalefactory+centery : centery,
-        });
-        //add parent nodes and an edge to each one
-
-        // term.get('parents').forEach(function(parent){
-        //
-        //   _this.store.findRecord('term',parent.id).then(function(){
-        //     var parentterm = _this.store.peekRecord('term',parent.id);
-        //     // console.log(parentterm.get('id'));
-        //     if(!_this.get('nodes').findBy('id',parentterm.get('termid'))){
-        //       //check for duplicates before adding
-        //       _this.get('nodes').addObject({
-        //         id: parentterm.get('termid'),
-        //         group: 'parent',
-        //         x: parentterm.get('semanticdissimilarityx')*scalefactor+center,
-        //         y: parentterm.get('semanticdissimilarityy')*scalefactor+center,
-        //       });
-        //     }
-        //     _this.get('linkloadingqueue').addObject({
-        //       source: term.get('termid'),
-        //       target: parentterm.get('termid'),
-        //       type: 'dotted',
-        //       value: 1
-        //     });
-        //   });
-        // });
-
-        this.get('termloadingqueue').removeObject(enrichmentterm);
-      }, this);
-      if(!this.get('updating')) {
-        this.set('updating', true);
-        Ember.run.scheduleOnce('render', this, this.update);
-      }
-    }
-    // Ember.run.scheduleOnce('render', this, this.update);
-    // this.addNode();
-  }),
   updateLinks: Ember.observer('linkloadingqueue.@each', function(){
     var context = this;
     if(this.get('linkloadingqueue.length')>0){
@@ -329,13 +276,12 @@ export default Component.extend(ResizeAware,{
     var node_objects= nodelayer.selectAll("circle").data(graph.nodes, function(d) { return d.id;});
     //need to figure out why exit is occilating, disabled for now
     // node_objects.exit().remove();
-    node_objects.enter().append("circle").attr("r", function(d){console.log(d);return d.enrichment.get('level')})
+    node_objects.enter().append("circle").attr("r", function(d){return d.enrichment.get('level')})
         .call(d3.drag()
             .on("start", (d, i) => context.dragstarted(d, i, context))
             .on("drag", (d, i) => context.dragged(d, i, context))
-            .on("end", (d, i) => context.dragended(d, i, context)));
-
-    node_objects.attr("class", function(d){return d.selected ? d.group + ' selected' : d.group});
+            .on("end", (d, i) => context.dragended(d, i, context)))
+        .attr("class", function(d){return d.selected ? d.group + ' selected' : d.group});
 
     var link_objects = linklayer.selectAll("line").data(graph.links);
     link_objects.enter().append("line")

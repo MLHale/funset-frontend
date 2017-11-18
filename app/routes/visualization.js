@@ -11,6 +11,7 @@ export default Route.extend({
       refreshModel: true
     }
   },
+  termstoload: 1,
   loadingqueue: Ember.ArrayProxy.create({ content: Ember.A() }),
   model(params){
     var _this = this;
