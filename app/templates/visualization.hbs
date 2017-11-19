@@ -14,7 +14,7 @@
           {{/if}}
         </div>
       {{else}}
-        {{term-ontology nodes=model labels=showTermLabels linkforce=linkForce renderEventQueue=renderEventQueue}}
+        {{term-ontology nodes=model parentNodes=parentNodes showTermLabels=showTermLabels linkForcesOn=linkForcesOn renderEventQueue=renderEventQueue}}
       {{/unless}}
     {{/card.content}}
   {{/paper-card}}

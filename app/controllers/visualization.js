@@ -3,7 +3,7 @@ import Ember from 'ember';
 
 export default Controller.extend({
   //toggles for graph options
-  linkForce: false,
+  linkForcesOn: false,
   showTermLabels: false,
 
 
@@ -76,22 +76,50 @@ export default Controller.extend({
       // });
     }
   }),
+  parentNodes: Ember.ArrayProxy.create({content: Ember.A()}),
   actions: {
     /*
       Handle term selections by dispatching an event of a particular type to the underlying graph component
     */
     toggleSelectedTerm(node){
+      var _this = this;
       var event = {type: ''}
       if (node.selected){
         node.selected = false;
         node.enrichment.set('selected', false);
         event.type = 'deselectednode';
-      } else{
+      }
+      else {
         node.selected = true;
         node.enrichment.set('selected', true);
         event.type = 'selectednode';
+        var width = Ember.$('.term-ontology-card').width();
+        var scalefactor = width;
+        var center = scalefactor/2;
+        this.get('renderEventQueue').addObject(event);
+        node.term.get('parents').forEach(function(parent){
+          _this.store.findRecord('term',parent.id).then(function(){
+            var term = _this.store.peekRecord('term',parent.id);
+            console.log(term.get('semanticdissimilarityx'),scalefactor,center);
+            if(!_this.get('parentNodes').findBy('id',term.get('termid'))){
+              //check for duplicates before adding
+              console.log(term.get('termid'));
+              var parentnode = {
+                id: term.get('termid'),
+                group: 'parent',
+                term: term,
+                enrichment: null,
+                x: term.get('semanticdissimilarityx') ? term.get('semanticdissimilarityx')*scalefactor+center : center,
+                y: term.get('semanticdissimilarityy') ? term.get('semanticdissimilarityy')*scalefactor+center : center,
+              };
+              console.log('parentnode', parentnode);
+              _this.get('parentNodes').addObject(parentnode);
+              _this.get('renderEventQueue').addObject({type: 'addparent', node:parentnode, source:node});
+            }
+
+          });
+        });
       }
-      this.get('renderEventQueue').addObject(event);
     }
   }
 });
