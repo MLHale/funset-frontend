@@ -12,7 +12,7 @@ export default Controller.extend({
     Returns a sorted ArrayProxy based on the underlying model (nodes).
   */
   sortedNodes: Ember.computed('model.@each', 'model.@each.selected', function(){
-    return this.get('model').sortBy('enrichment.level').reverse()
+    return this.get('model').filterBy('enrichment').sortBy('enrichment.level').reverse()
   }),
 
   links: Ember.ArrayProxy.create({content: Ember.A([])}), //links maintained by d3 term-ontology component
@@ -50,30 +50,6 @@ export default Controller.extend({
           y: term.get('semanticdissimilarityy') ? term.get('semanticdissimilarityy')*scalefactor+center : center,
         });
       });
-      //add parent nodes and an edge to each one
-
-      // term.get('parents').forEach(function(parent){
-      //
-      //   _this.store.findRecord('term',parent.id).then(function(){
-      //     var parentterm = _this.store.peekRecord('term',parent.id);
-      //     // console.log(parentterm.get('id'));
-      //     if(!_this.get('nodes').findBy('id',parentterm.get('termid'))){
-      //       //check for duplicates before adding
-      //       _this.get('nodes').addObject({
-      //         id: parentterm.get('termid'),
-      //         group: 'parent',
-      //         x: parentterm.get('semanticdissimilarityx')*scalefactor+center,
-      //         y: parentterm.get('semanticdissimilarityy')*scalefactor+center,
-      //       });
-      //     }
-      //     _this.get('linkloadingqueue').addObject({
-      //       source: term.get('termid'),
-      //       target: parentterm.get('termid'),
-      //       type: 'dotted',
-      //       value: 1
-      //     });
-      //   });
-      // });
     }
   }),
   parentNodes: Ember.ArrayProxy.create({content: Ember.A()}),
@@ -100,10 +76,8 @@ export default Controller.extend({
         node.term.get('parents').forEach(function(parent){
           _this.store.findRecord('term',parent.id).then(function(){
             var term = _this.store.peekRecord('term',parent.id);
-            console.log(term.get('semanticdissimilarityx'),scalefactor,center);
             if(!_this.get('parentNodes').findBy('id',term.get('termid'))){
               //check for duplicates before adding
-              console.log(term.get('termid'));
               var parentnode = {
                 id: term.get('termid'),
                 group: 'parent',
@@ -112,7 +86,6 @@ export default Controller.extend({
                 x: term.get('semanticdissimilarityx') ? term.get('semanticdissimilarityx')*scalefactor+center : center,
                 y: term.get('semanticdissimilarityy') ? term.get('semanticdissimilarityy')*scalefactor+center : center,
               };
-              console.log('parentnode', parentnode);
               _this.get('parentNodes').addObject(parentnode);
               _this.get('renderEventQueue').addObject({type: 'addparent', node:parentnode, source:node});
             }

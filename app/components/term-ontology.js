@@ -49,8 +49,8 @@ export default Component.extend(ResizeAware,{
           node_objects.attr("class", function(d){return d.selected ? d.group + ' selected' : d.group});
         }
         else if (event.type === 'addparent'){
-          if(!this.get('nodes').findBy('id',event.node.id)){
-            //prevent duplicates
+          if(!this.get('nodes').findBy('id',event.node.id)){//prevent duplicate nodes
+
             var _this = this;
             this.get('nodes').addObject(event.node);
 
@@ -62,25 +62,28 @@ export default Component.extend(ResizeAware,{
                 .attr("class", function(d){return d.selected ? d.group + ' selected' : d.group})
                 .attr("transform", transform);
 
-            // Setup edges and draw them on the graph - attaching a new svg line for each edge
-
-            this.get('links').addObject({
-              source: event.source.id,
-              target: event.node.id,
-              type: 'dotted',
-              value: 1
-            });
-            var link_objects = this.get('linklayer').selectAll("line").data(this.get('_links'));
-            link_objects.enter().append("line")
-              .attr("class", function(d) { return "link " + d.type; })
-              .attr("marker-end", function(d) { return "url(#" + d.type + ")"; });
-            this.updateLinkForces()
-
-            this.get('linklayer').selectAll('line').attr("transform", transform);
-            // d3.zoom().transform(d3.select(".zoom-layer"),d3.zoomTransform(d3.select(".zoom-layer").node()));
-            this.get('simulation').alpha(.3).restart();
-            this.simulationticked(this);
+            //update text labels if enabled
+            this.updateTextLabels()
           }
+
+          // Setup edges and draw them on the graph - attaching a new svg line for each edge
+          this.get('links').addObject({
+            source: event.source.id,
+            target: event.node.id,
+            type: 'dotted',
+            value: 1
+          });
+          var link_objects = this.get('linklayer').selectAll("line").data(this.get('_links'));
+          link_objects.enter().append("line")
+            .attr("class", function(d) { return "link " + d.type; })
+            .attr("marker-end", function(d) { return "url(#" + d.type + ")"; })
+            .attr("transform", transform);
+          this.updateLinkForces()
+
+          //ensure the graph is updated according to the current transform
+          this.get('nodelayer').selectAll('circle').attr("transform", transform);
+          this.get('linklayer').selectAll('line').attr("transform", transform);
+          this.get('simulation').alpha(.01).restart();
 
 
         }
@@ -88,23 +91,10 @@ export default Component.extend(ResizeAware,{
     }
     renderEventQueue.popObject();
   }),
-  updateLinks: Ember.observer('linkloadingqueue.@each', function(){
-    var context = this;
-    if(this.get('linkloadingqueue.length')>0){
-      this.get('linkloadingqueue').forEach(function(link){
-        context.get('links').addObject(link);
-        context.get('linkloadingqueue').removeObject(link);
-      });
-      if(!context.get('updating')) {
-        context.set('updating', true);
-        Ember.run.scheduleOnce('render', this, this.renderGraph);
-      }
-    }
-  }),
   toggleLabels: Ember.observer('showTermLabels', function(){
     if(!this.get('updating')) {
       this.updateTextLabels(this);
-      this.simulationticked(this);
+      // this.simulationticked(this);
     }
   }),
   toggleLinkforce: Ember.observer('linkForcesOn', function(){
@@ -123,9 +113,11 @@ export default Component.extend(ResizeAware,{
     var text_objects;
     if(this.get('showTermLabels')){
       text_objects = textlayer.selectAll("text").data(graph.nodes, function(d) { return d.id;});
+      var transform = d3.zoomTransform(d3.select(".zoom-layer").node());
       text_objects.enter().append("svg:text")
-        .attr("x", function(d) { return d.x + d.enrichment ? d.enrichment.get('level')+5 : 13; })
-        .attr("y", function(d) { return d.y + d.enrichment ? d.enrichment.get('level')/2 : 4; })
+        .attr("x", function(d) { return d.x + (d.enrichment!=null ? d.enrichment.get('level')+5 : 13); })
+        .attr("y", function(d) { return d.y + (d.enrichment!=null ? d.enrichment.get('level')/2 : 4); })
+        .attr("transform", transform)
         .text(function(d) { return d.id; });
 
     } else{
@@ -214,7 +206,6 @@ export default Component.extend(ResizeAware,{
       .style("text-anchor", "middle")
       .text("Multi-dimensional Scaling (pixels)");
   },
-
   /*
     Updates the position of each object in each layer as the simulation runs.
   */
@@ -229,8 +220,8 @@ export default Component.extend(ResizeAware,{
         .attr("cy", function(d) { return d.y; });
 
     this.get('textlayer').selectAll("text")
-        .attr("x", function(d) { return d.x + (d.enrichment.get('level')+5 || 13); })
-        .attr("y", function(d) { return d.y + (d.enrichment.get('level')/2 || 4); })
+        .attr("x", function(d) { return d.x + (d.enrichment!=null ? d.enrichment.get('level')+5 : 13); })
+        .attr("y", function(d) { return d.y + (d.enrichment!=null ? d.enrichment.get('level')/2 : 4); })
 
   },
   /*
@@ -347,7 +338,7 @@ export default Component.extend(ResizeAware,{
     // Setup nodes in the graph, entering a new svg circle of radius enrichment.level for each node. Each node also has a handler for drag events
     var node_objects= nodelayer.selectAll("circle").data(graph.nodes, function(d) { return d.id;});
     node_objects.enter().append("circle").attr("r", function(d){return d.enrichment ? d.enrichment.get('level') : context.get('noderadius')})
-        .on('click', context.clicked)
+        .on('click', (d, i) => context.clicked(d, i, context))
         .call(d3.drag()
             .on("start", (d, i) => context.dragstarted(d, i, context))
             .on("drag", (d, i) => context.dragged(d, i, context))
@@ -403,10 +394,42 @@ export default Component.extend(ResizeAware,{
     this.get('textlayer').selectAll('text').attr("transform", d3.event.transform);
 
   },
+  /*
+    Handles 'click' events on nodes by toggling the selected flag on the data item and the css class. Should mirror the controller functionality.
+  */
   clicked(d, i){
+    var _this = this;
+    var node = d;
+    node.term.get('parents').forEach(function(parent){
+      _this.store.findRecord('term',parent.id).then(function(){
+        var term = _this.store.peekRecord('term',parent.id);
+        if(!_this.get('parentNodes').findBy('id',term.get('termid'))){//check for duplicates before adding
+          var width = Ember.$('.term-ontology-card').width();
+          var scalefactor = width;
+          var center = scalefactor/2;
+
+          // Add parent node to be loaded
+          var parentnode = {
+            id: term.get('termid'),
+            group: 'parent',
+            term: term,
+            enrichment: null,
+            x: term.get('semanticdissimilarityx') ? term.get('semanticdissimilarityx')*scalefactor+center : center,
+            y: term.get('semanticdissimilarityy') ? term.get('semanticdissimilarityy')*scalefactor+center : center,
+          };
+          _this.get('parentNodes').addObject(parentnode);
+
+          // Update graph using the render queue
+          _this.get('renderEventQueue').addObject({type: 'addparent', node:parentnode, source:node});
+        }
+
+      });
+    });
+    
+    // Update state to reflect that the node is currently selected
     d.selected = d.selected ? false : true;
     d.enrichment.set('selected',!d.enrichment.get('selected'))
-    d3.select(this).attr("class", function(d){return d.selected ? d.group + ' selected' : d.group});
+    this.get('nodelayer').selectAll("circle").attr("class", function(d){return d.selected ? d.group + ' selected' : d.group});
   },
   /*
     Handles drag `start` events on nodes by logging starting position of the node d being acted upon by a d3 event.
