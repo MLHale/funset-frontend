@@ -7,8 +7,8 @@ module.exports = function(environment) {
     environment,
     rootURL: '/',
     bURL: '/',
-    locationType: 'auto',
-    host: 'http://localhost',
+    locationType: 'hash',
+    host: 'http://ec2-18-217-234-165.us-east-2.compute.amazonaws.com',
     EmberENV: {
       FEATURES: {
         // Here you can enable experimental features on an ember canary build
@@ -47,7 +47,7 @@ module.exports = function(environment) {
 
   if (environment === 'production') {
     // here you can enable a production-specific feature
-    ENV.host = 'http://137.48.191.135';
+    ENV.host = 'http://ec2-18-217-234-165.us-east-2.compute.amazonaws.com';
     ENV.locationType = 'hash';
   }
 
