@@ -9,11 +9,22 @@
       {{#card.content}}
         <div class="layout-row">
           <div class="layout-column flex">
-            {{paper-input textarea=true block=true label="Genes" passThru=(hash rows=5 maxRows=5) value=genelist required=true onChange=(action (mut genelist)) customValidations=genelistValidation}}
+            {{paper-input textarea=true block=true label="Genes" value=genelist required=true onChange=(action (mut genelist)) customValidations=genelistValidation}}
           </div>
         </div>
+        <div class="layout layout-align-center-center">
+          {{#paper-select
+            class="flex"
+            label="Organism"
+            options=organismoptions
+            selected=organismselected
+            onChange=(action (mut organismselected))
+            as |organism|}}
+            {{organism.name}}
+          {{/paper-select}}
+        </div>
         <div class="layout layout-align-center-center slider-container">
-          <span style="margin-right: 16px;">p-value threshold</span>
+          <span style="margin-right: 16px; margin-left: 5px;">p-value threshold</span>
           {{paper-slider class="flex" min=0 max=100 discrete=true steps=2 value=pvalueslider onChange=(action "updatePValueSlider")}}
           {{paper-input value=pvaluethreshold onChange=(action "updatePValue")}}
         </div>

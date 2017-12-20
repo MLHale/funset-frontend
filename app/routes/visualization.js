@@ -9,6 +9,12 @@ export default Route.extend({
     },
     pvalue: {
       refreshModel: true
+    },
+    clusters: {
+      refreshModel: true
+    },
+    organism: {
+      refreshModel: true
     }
   },
   termstoload: 0,
@@ -24,7 +30,13 @@ export default Route.extend({
     var _this = this;
 
     // Invoke the GOUtil function and wait to receive a 'run' model with the enrichment data
-    Ember.$.getJSON(config.host+'/api/v1/runs/invoke?genes='+encodeURIComponent(params.geneids)+"&pvalue="+encodeURIComponent(params.pvalue)).then(function(run){
+    var request_url = config.host+'/api/v1/runs/invoke?'
+      + 'genes='    +  encodeURIComponent(params.geneids)
+      + '&pvalue='  +  encodeURIComponent(params.pvalue)
+      + '&clusters='+  encodeURIComponent(params.clusters)
+      + '&organism='+  encodeURIComponent(params.organism);
+
+    Ember.$.getJSON(request_url).then(function(run){
 
       // Total terms that will need to be loaded
       _this.set('termstoload', run.data.relationships.enrichments.data.length);
@@ -48,7 +60,7 @@ export default Route.extend({
         _this.set('termcount',result.data.count);
       })
     });
-    
+
     // Prepare an empty array for the controller to use
     return Ember.ArrayProxy.create({content: Ember.A([])})
   },
