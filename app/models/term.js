@@ -7,7 +7,5 @@ export default DS.Model.extend({
   description: DS.attr('string'),
   synonym: DS.attr('string'),
   parents: DS.hasMany('term'),
-  semanticdissimilarityx: DS.attr('number'),
-  semanticdissimilarityy: DS.attr('number'),
   enrichments: DS.belongsTo('enrichment')
 });
