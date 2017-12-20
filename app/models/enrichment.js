@@ -7,6 +7,6 @@ export default DS.Model.extend({
   semanticdissimilarityx: DS.attr('number'),
   semanticdissimilarityy: DS.attr('number'),
   cluster: DS.attr('number'),
-  medoid: DS.attr('bool'),
+  medoid: DS.attr('boolean'),
   genes: DS.hasMany('gene')
 });

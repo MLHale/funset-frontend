@@ -46,8 +46,8 @@ export default Controller.extend({
           group: 'enrichment',
           term: term,
           enrichment: enrichment,
-          x: term.get('semanticdissimilarityx') ? term.get('semanticdissimilarityx')*scalefactor+center : center,
-          y: term.get('semanticdissimilarityy') ? term.get('semanticdissimilarityy')*scalefactor+center : center,
+          x: enrichment.get('semanticdissimilarityx') ? enrichment.get('semanticdissimilarityx')*scalefactor+center : center,
+          y: enrichment.get('semanticdissimilarityy') ? enrichment.get('semanticdissimilarityy')*scalefactor+center : center,
         });
       });
     }
