@@ -16,11 +16,22 @@ export default Controller.extend({
   }),
 
   sortedNodeClusters: Ember.computed('model.@each', 'model.@each.selected', 'route.clusters', function(){
-    var nodelists = Ember.ArrayProxy.create({content: Ember.A([])});
+    var clusters = Ember.ArrayProxy.create({content: Ember.A([])});
     for(var i=0; i<this.get("route.clusters"); i++){
-      nodelists.addObject({name: i, nodes: this.get('model').filterBy('enrichment.cluster', i)});
+      var genes = Ember.ArrayProxy.create({content: Ember.A([])});
+      this.get('model').filterBy('enrichment.cluster', i).forEach(node =>{
+        node.enrichment.get('genes').forEach(gene=>genes.addObject(gene));
+
+      });
+      clusters.addObject({name: i, nodes: this.get('model').filterBy('enrichment.cluster', i), genes: genes});
     }
-    return nodelists;
+    return clusters;
+  }),
+
+  sortedGeneClusters: Ember.computed('model.@each', 'model.@each.selected', 'route.clusters', function(){
+    var genelists = Ember.ArrayProxy.create({content: Ember.A([])});
+
+    return genelists;
   }),
 
   links: Ember.ArrayProxy.create({content: Ember.A([])}), //links maintained by d3 term-ontology component

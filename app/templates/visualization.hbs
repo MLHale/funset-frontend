@@ -61,32 +61,74 @@
             {{#paper-expansion-panel as |panel|}}
               {{#panel.collapsed}}
                 <div class="md-panel-title">Cluster {{cluster.name}}</div>
-                <div class="md-panel-summary">{{cluster.nodes.length}} Terms</div>
+                <div class="md-panel-summary">{{cluster.nodes.length}} Terms / {{cluster.genes.length}} Genes</div>
                 {{paper-icon "keyboard_arrow_down"}}
               {{/panel.collapsed}}
 
               {{#panel.expanded as |expanded|}}
                 {{#expanded.header}}
                   <div class="md-panel-title">Cluster {{cluster.name}}</div>
-                  <div class="md-panel-summary">{{cluster.nodes.length}} Terms</div>
+                  <div class="md-panel-summary">{{cluster.nodes.length}} Terms / {{cluster.genes.length}} Genes</div>
                   {{paper-icon "keyboard_arrow_up"}}
                 {{/expanded.header}}
 
                 {{#expanded.content}}
-                  {{#each cluster.nodes as |node|}}
-                    {{#paper-item class="md-3-line" onClick=(action "toggleSelectedTerm" node) as |controls|}}
-                      {{paper-icon "title" class=(concat "md-avatar-icon" (if node.enrichment.selected " term-selected"))}}
-                      <div class="md-list-item-text">
-                        <h3>
-                          <strong>{{node.term.termid}} [p={{node.enrichment.pvalue}},l={{node.enrichment.level}}]</strong>
-                        </h3>
-                        <h4>{{node.term.name}}</h4>
-                        <p>
-                          {{node.term.description}}
-                        </p>
-                      </div>
-                    {{/paper-item}}
-                  {{/each}}
+
+                  <!-- term sub Panel -->
+                  {{#paper-expansion-panel as |termpanel|}}
+                    {{#termpanel.collapsed}}
+                      <div class="md-panel-summary"> Terms </div>
+                      {{paper-icon "keyboard_arrow_down"}}
+                    {{/termpanel.collapsed}}
+                    {{#termpanel.expanded as |termsexpanded|}}
+                      {{#termsexpanded.header}}
+                        <div class="md-panel-summary"> Terms </div>
+                        {{paper-icon "keyboard_arrow_down"}}
+                      {{/termsexpanded.header}}
+                      {{#termsexpanded.content}}
+                        {{#each cluster.nodes as |node|}}
+                          {{#paper-item class="md-3-line" onClick=(action "toggleSelectedTerm" node) as |controls|}}
+                            {{paper-icon "title" class=(concat "md-avatar-icon" (if node.enrichment.selected " term-selected"))}}
+                            <div class="md-list-item-text">
+                              <h3>
+                                <strong>{{node.term.termid}} [p={{node.enrichment.pvalue}},l={{node.enrichment.level}}]</strong>
+                              </h3>
+                              <h4>{{node.term.name}}</h4>
+                              <p>
+                                {{node.term.description}}
+                              </p>
+                            </div>
+                          {{/paper-item}}
+                        {{/each}}
+                      {{/termsexpanded.content}}
+                    {{/termpanel.expanded}}
+                  {{/paper-expansion-panel}}
+                    <!-- Gene sub Panel -->
+                  {{#paper-expansion-panel as |genepanel|}}
+                    {{#genepanel.collapsed}}
+                      <div class="md-panel-summary"> Genes </div>
+                      {{paper-icon "keyboard_arrow_down"}}
+                    {{/genepanel.collapsed}}
+
+                    {{#genepanel.expanded as |genesexpanded|}}
+                      {{#genesexpanded.header}}
+                        <div class="md-panel-summary"> Genes </div>
+                        {{paper-icon "keyboard_arrow_down"}}
+                      {{/genesexpanded.header}}
+                      {{#genesexpanded.content}}
+                        {{#each cluster.genes as |gene|}}
+                          {{#paper-item class="md-2-line" onClick=(action "toggleSelectedTerm" node) as |controls|}}
+                            <div class="md-list-item-text">
+                              <p>
+                                <strong>{{gene.geneid}}</strong>
+                              </p>
+                            </div>
+                          {{/paper-item}}
+                        {{/each}}
+                      {{/genesexpanded.content}}
+                    {{/genepanel.expanded}}
+                  {{/paper-expansion-panel}}
+
                 {{/expanded.content}}
 
                 {{!-- {{#expanded.footer}}

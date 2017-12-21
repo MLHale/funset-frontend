@@ -126,7 +126,7 @@ export default Component.extend(ResizeAware,{
         .attr("x", function(d) { return d.x + (d.enrichment!=null ? d.enrichment.get('level')+5 : 13); })
         .attr("y", function(d) { return d.y + (d.enrichment!=null ? d.enrichment.get('level')/2 : 4); })
         .attr("transform", transform)
-        .text(function(d) { return d.id; });
+        .text(function(d) { return d.id+ ' ('+d.term.get('name')+')'; });
 
     } else{
         text_objects = textlayer.selectAll("text").data({}, function(d) { return d.id;});
@@ -324,6 +324,9 @@ export default Component.extend(ResizeAware,{
     // Layer for nodes in the graph
     this.set('nodelayer', svg.append("g").attr("class", "node-layer"));
 
+    // Layer for nodes in the graph
+    this.set('genenodelayer', svg.append("g").attr("class", "gene-node-layer"));
+
     // Layer for node labels in the graph
     this.set('textlayer', svg.append("g").attr("class", "text-layer"));
     this.set('clusterlayer', svg.append("g").attr("class", "cluster-layer"));
@@ -373,7 +376,7 @@ export default Component.extend(ResizeAware,{
     cluster_text_objects.enter().append("svg:text")
       .attr("x", function(d) { return d.x + (d.enrichment!=null ? d.enrichment.get('level')+5 : 13); })
       .attr("y", function(d) { return d.y + (d.enrichment!=null ? d.enrichment.get('level')/2 : 4); })
-      .text(function(d) { return "Cluster "+ d.enrichment.get('cluster') + " medoid - "+d.id+ '('+d.term.get('name')+')'; })
+      .text(function(d) { return "Cluster "+ d.enrichment.get('cluster') + " medoid - "+d.id+ ' ('+d.term.get('name')+')'; })
         .attr("style", "font-size:200%;");
 
     // Setup text showTermLabels. If enabled each node should have a label corresponding to its id
