@@ -70,12 +70,9 @@ export default Controller.extend({
         });
       });
       this.get('model').forEach(node => {
-        console.log('node', node);
         node.term.get('parents').forEach(parent =>{
-          console.log('parent', parent.id);
           var target = _this.store.peekRecord('term',parent.id);
           if(_this.get('model').findBy('id',target.get('termid'))){
-            console.log('adding link', target.get('termid'));
             _this.get('links').addObject({
               source: node.id,
               target: parent.get('termid'),
