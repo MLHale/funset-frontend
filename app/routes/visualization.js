@@ -21,6 +21,7 @@ export default Route.extend({
   termcount: 0,
   clusters: 0,
   loadingqueue: Ember.ArrayProxy.create({ content: Ember.A() }),
+  host: config.host,
   beforeModel(){
     //reset loading variables that control the interface
     this.get('loadingqueue').clear();
@@ -40,12 +41,13 @@ export default Route.extend({
       + '&organism='+  encodeURIComponent(params.organism);
 
     Ember.$.getJSON(request_url).then(function(run){
-
+      console.log(run);
       // Total terms that will need to be loaded
       _this.set('termstoload', run.data.relationships.enrichments.data.length);
 
       run.data.type = 'run';//ember data expects raw JSONAPI data to be typed singular for push
       var loadedrun = _this.store.push(run);
+      _this.set('run',_this.store.peekRecord('run',run.data.id));
 
       // Load related enrichment and term records connected to the run
       run.data.relationships.enrichments.data.forEach(function(enrichment){

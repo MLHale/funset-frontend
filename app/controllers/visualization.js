@@ -63,8 +63,8 @@ export default Controller.extend({
         _this.get('model').addObject({
           id: term.get('termid'),
           group: 'enrichment',
-          term: term,
-          enrichment: enrichment,
+          term: _this.store.peekRecord('term',term.get('id')),
+          enrichment: _this.store.peekRecord('enrichment',enrichment.get('id')),
           x: enrichment.get('semanticdissimilarityx') ? enrichment.get('semanticdissimilarityx')*scalefactor+center : center,
           y: enrichment.get('semanticdissimilarityy') ? enrichment.get('semanticdissimilarityy')*scalefactor+center : center,
         });
@@ -86,8 +86,17 @@ export default Controller.extend({
   }),
   parentNodes: Ember.ArrayProxy.create({content: Ember.A()}),
   actions: {
-    updateClusternum(value){
-      this.set('route.clusters',value);
+    updateClusternum(clusters){
+      var _this = this;
+      this.set('route.clusters',clusters);
+      var request_url = this.get('route.host')+'/api/v1/runs/'+this.get('route.run.id')+'/recluster?'
+        + '&clusters='+  encodeURIComponent(clusters);
+      Ember.$.getJSON(request_url).then(function(run){
+        console.log(run);
+        run.data.type = 'run';//ember data expects raw JSONAPI data to be typed singular for push
+        var loadedrun = _this.store.push(run);
+
+      });
     },
     toggleSelectedCluster(cluster){
       var _this = this;
