@@ -1,5 +1,5 @@
 @import 'ember-paper';
-
+@import "ember-paper-expansion-panel";
 .footer {
   padding: 0px 8px 8px 8px;
 }
@@ -34,6 +34,10 @@
   pointer-events: all;
   stroke: none;
   stroke-width: 40px;
+}
+
+.cluster-layer {
+  
 }
 
 circle {
@@ -92,4 +96,8 @@ term-ontology-graph {
 
 md-icon.term-selected {
   background-color: rgba(4, 0, 255, 0.38) !important;
+}
+
+.graph-options-slider {
+  margin: 0px 15px 0px 15px;
 }

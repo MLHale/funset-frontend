@@ -10,7 +10,7 @@ export default Component.extend(ResizeAware,{
 
   tagName: 'svg',
   classNames: ['term-ontology-graph'],
-
+  clusterColorOptions: ["#dfc27d", "#c7eae5", "#543005", "#003c30", "#80cdc1", "#35978f", "#01665e", "#f6e8c3", "#f5f5f5", "#bf812d", "#8c510a",'#67001f','#b2182b','#d6604d','#f4a582','#fddbc7','#f7f7f7','#d1e5f0','#92c5de','#4393c3','#2166ac','#053061',"AliceBlue","AntiqueWhite","Aqua","Aquamarine","Azure","Beige","Bisque","Black","BlanchedAlmond","Blue","BlueViolet","Brown","BurlyWood","CadetBlue","Chartreuse","Chocolate","Coral","CornflowerBlue","Cornsilk","Crimson","Cyan","DarkBlue","DarkCyan","DarkGoldenRod","DarkGray","DarkGrey","DarkGreen","DarkKhaki","DarkMagenta","DarkOliveGreen","Darkorange","DarkOrchid","DarkRed","DarkSalmon","DarkSeaGreen","DarkSlateBlue","DarkSlateGray","DarkSlateGrey","DarkTurquoise","DarkViolet","DeepPink","DeepSkyBlue","DimGray","DimGrey","DodgerBlue","FireBrick","FloralWhite","ForestGreen","Fuchsia","Gainsboro","GhostWhite","Gold","GoldenRod","Gray","Grey","Green","GreenYellow","HoneyDew","HotPink","IndianRed","Indigo","Ivory","Khaki","Lavender","LavenderBlush","LawnGreen","LemonChiffon","LightBlue","LightCoral","LightCyan","LightGoldenRodYellow","LightGray","LightGrey","LightGreen","LightPink","LightSalmon","LightSeaGreen","LightSkyBlue","LightSlateGray","LightSlateGrey","LightSteelBlue","LightYellow","Lime","LimeGreen","Linen","Magenta","Maroon","MediumAquaMarine","MediumBlue","MediumOrchid","MediumPurple","MediumSeaGreen","MediumSlateBlue","MediumSpringGreen","MediumTurquoise","MediumVioletRed","MidnightBlue","MintCream","MistyRose","Moccasin","NavajoWhite","Navy","OldLace","Olive","OliveDrab","Orange","OrangeRed","Orchid","PaleGoldenRod","PaleGreen","PaleTurquoise","PaleVioletRed","PapayaWhip","PeachPuff","Peru","Pink","Plum","PowderBlue","Purple","Red","RosyBrown","RoyalBlue","SaddleBrown","Salmon","SandyBrown","SeaGreen","SeaShell","Sienna","Silver","SkyBlue","SlateBlue","SlateGray","SlateGrey","Snow","SpringGreen","SteelBlue","Tan","Teal","Thistle","Tomato","Turquoise","Violet","Wheat","White","WhiteSmoke","Yellow","YellowGreen"],
   width: 1000,
   height: 1000,
   noderadius: 8,
@@ -223,6 +223,10 @@ export default Component.extend(ResizeAware,{
         .attr("x", function(d) { return d.x + (d.enrichment!=null ? d.enrichment.get('level')+5 : 13); })
         .attr("y", function(d) { return d.y + (d.enrichment!=null ? d.enrichment.get('level')/2 : 4); })
 
+    this.get('clusterlayer').selectAll("text")
+        .attr("x", function(d) { return d.x + (d.enrichment!=null ? d.enrichment.get('level')+5 : 13); })
+        .attr("y", function(d) { return d.y + (d.enrichment!=null ? d.enrichment.get('level')/2 : 4); })
+
   },
   /*
     Setup the component by initializing graph layers and initially rendering. This method is called when the component is first inserted in the DOM.
@@ -314,6 +318,7 @@ export default Component.extend(ResizeAware,{
 
     // Layer for node labels in the graph
     this.set('textlayer', svg.append("g").attr("class", "text-layer"));
+    this.set('clusterlayer', svg.append("g").attr("class", "cluster-layer"));
 
     // Layer for axis labels
     this.set('axislabellayer',svg.append("g").attr("class", "axislabel-layer"));
@@ -331,6 +336,7 @@ export default Component.extend(ResizeAware,{
     // Retrieve SVG Layers
     var linklayer = this.get('linklayer');
     var nodelayer = this.get('nodelayer');
+    var clusterlayer = this.get('clusterlayer');
     var simulation = this.get('simulation');
     simulation.stop();
     var graph = {nodes: this.get('_nodes'), links: this.get('_links')};
@@ -343,7 +349,8 @@ export default Component.extend(ResizeAware,{
             .on("start", (d, i) => context.dragstarted(d, i, context))
             .on("drag", (d, i) => context.dragged(d, i, context))
             .on("end", (d, i) => context.dragended(d, i, context)))
-        .attr("class", function(d){return d.selected ? d.group + ' selected' : d.group});
+        .attr("class", function(d){return d.selected ? d.group + ' selected' : d.group})
+        .attr("style", function(d){return "fill: "+context.get('clusterColorOptions')[d.enrichment.get('cluster')]+";"});
 
     // Setup edges and draw them on the graph - attaching a new svg line for each edge
     var link_objects = linklayer.selectAll("line").data(graph.links);
@@ -352,6 +359,14 @@ export default Component.extend(ResizeAware,{
       .attr("marker-end", function(d) { return "url(#" + d.type + ")"; });
 
     link_objects.exit().remove();
+
+    var cluster_metoid_nodes = graph.nodes.filter(node => node.enrichment.get('medoid')===true);
+    var cluster_text_objects = clusterlayer.selectAll("text").data(cluster_metoid_nodes);
+    cluster_text_objects.enter().append("svg:text")
+      .attr("x", function(d) { return d.x + (d.enrichment!=null ? d.enrichment.get('level')+5 : 13); })
+      .attr("y", function(d) { return d.y + (d.enrichment!=null ? d.enrichment.get('level')/2 : 4); })
+      .text(function(d) { return "Cluster "+ d.enrichment.get('cluster') + " medoid - "+d.id+ '('+d.term.get('name')+')'; })
+        .attr("style", "font-size:200%;");
 
     // Setup text showTermLabels. If enabled each node should have a label corresponding to its id
     this.updateTextLabels();
@@ -392,7 +407,7 @@ export default Component.extend(ResizeAware,{
     this.get('nodelayer').selectAll('circle').attr("transform", d3.event.transform);
     this.get('linklayer').selectAll('line').attr("transform", d3.event.transform);
     this.get('textlayer').selectAll('text').attr("transform", d3.event.transform);
-
+    this.get('clusterlayer').selectAll('text').attr("transform", d3.event.transform);
   },
   /*
     Handles 'click' events on nodes by toggling the selected flag on the data item and the css class. Should mirror the controller functionality.
@@ -425,7 +440,7 @@ export default Component.extend(ResizeAware,{
 
       });
     });
-    
+
     // Update state to reflect that the node is currently selected
     d.selected = d.selected ? false : true;
     d.enrichment.set('selected',!d.enrichment.get('selected'))

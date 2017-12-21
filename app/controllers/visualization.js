@@ -15,6 +15,14 @@ export default Controller.extend({
     return this.get('model').filterBy('enrichment').sortBy('enrichment.level').reverse()
   }),
 
+  sortedNodeClusters: Ember.computed('model.@each', 'model.@each.selected', 'route.clusters', function(){
+    var nodelists = Ember.ArrayProxy.create({content: Ember.A([])});
+    for(var i=0; i<this.get("route.clusters"); i++){
+      nodelists.addObject({name: i, nodes: this.get('model').filterBy('enrichment.cluster', i)});
+    }
+    return nodelists;
+  }),
+
   links: Ember.ArrayProxy.create({content: Ember.A([])}), //links maintained by d3 term-ontology component
 
   /*
@@ -54,6 +62,9 @@ export default Controller.extend({
   }),
   parentNodes: Ember.ArrayProxy.create({content: Ember.A()}),
   actions: {
+    updateClusternum(value){
+      this.set('route.clusters',value);
+    },
     /*
       Handle term selections by dispatching an event of a particular type to the underlying graph component
     */

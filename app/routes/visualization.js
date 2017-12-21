@@ -19,17 +19,20 @@ export default Route.extend({
   },
   termstoload: 0,
   termcount: 0,
+  clusters: 0,
   loadingqueue: Ember.ArrayProxy.create({ content: Ember.A() }),
   beforeModel(){
     //reset loading variables that control the interface
     this.get('loadingqueue').clear();
     this.set('termstoload',0);
     this.set('termcount',0);
+    this.set('clusters',0);
   },
   model(params){
     var _this = this;
 
     // Invoke the GOUtil function and wait to receive a 'run' model with the enrichment data
+    this.set('clusters',params.clusters);
     var request_url = config.host+'/api/v1/runs/invoke?'
       + 'genes='    +  encodeURIComponent(params.geneids)
       + '&pvalue='  +  encodeURIComponent(params.pvalue)

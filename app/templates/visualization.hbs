@@ -31,6 +31,11 @@
       {{/paper-toolbar}}
       {{#paper-list}}
         {{#paper-subheader}}Graph options{{/paper-subheader}}
+          <div class="layout layout-align-center-center slider-container graph-options-slider">
+            <span style="margin-right: 16px;">Number of Clusters</span>
+            {{paper-slider class="flex" min=0 max=100 discrete=true steps=2 value=route.clusters onChange=(action "updateClusternum")}}
+            {{paper-input value=route.clusters onChange=(action "updateClusternum")}}
+          </div>
         {{#paper-item as |controls|}}
           <p>Show Term Labels?</p>
           <div class="md-secondary-container">
@@ -52,30 +57,45 @@
       {{/paper-list}}
       {{#paper-list class="scrollabletermlist"}}
         {{#paper-subheader}}Terms{{/paper-subheader}}
-          {{#each sortedNodes as |node|}}
-            {{#paper-item class="md-3-line" onClick=(action "toggleSelectedTerm" node) as |controls|}}
-              {{paper-icon "title" class=(concat "md-avatar-icon" (if node.enrichment.selected " term-selected"))}}
-              <div class="md-list-item-text">
-                <h3>
-                  <strong>{{node.term.termid}} [p={{node.enrichment.pvalue}},l={{node.enrichment.level}}]</strong>
-                </h3>
-                <h4>{{node.term.name}}</h4>
-                <p>
-                  {{node.term.description}}
-                </p>
-              </div>
-              {{!-- <div class="md-secondary-container">
-                {{#if waypoint.edit}}
-                  {{#controls.button secondary=true onClick=(action "saveMarker" waypoint)}}
-                    Save
-                  {{/controls.button}}
-                {{else}}
-                  {{#controls.button secondary=true onClick=(action "editMarker" waypoint)}}
-                    Edit
-                  {{/controls.button}}
-                {{/if}} --}}
-              {{!-- </div> --}}
-            {{/paper-item}}
+          {{#each sortedNodeClusters as |cluster|}}
+            {{#paper-expansion-panel as |panel|}}
+              {{#panel.collapsed}}
+                <div class="md-panel-title">Cluster {{cluster.name}}</div>
+                <div class="md-panel-summary">{{cluster.nodes.length}} Terms</div>
+                {{paper-icon "keyboard_arrow_down"}}
+              {{/panel.collapsed}}
+
+              {{#panel.expanded as |expanded|}}
+                {{#expanded.header}}
+                  <div class="md-panel-title">Cluster {{cluster.name}}</div>
+                  <div class="md-panel-summary">{{cluster.nodes.length}} Terms</div>
+                  {{paper-icon "keyboard_arrow_up"}}
+                {{/expanded.header}}
+
+                {{#expanded.content}}
+                  {{#each cluster.nodes as |node|}}
+                    {{#paper-item class="md-3-line" onClick=(action "toggleSelectedTerm" node) as |controls|}}
+                      {{paper-icon "title" class=(concat "md-avatar-icon" (if node.enrichment.selected " term-selected"))}}
+                      <div class="md-list-item-text">
+                        <h3>
+                          <strong>{{node.term.termid}} [p={{node.enrichment.pvalue}},l={{node.enrichment.level}}]</strong>
+                        </h3>
+                        <h4>{{node.term.name}}</h4>
+                        <p>
+                          {{node.term.description}}
+                        </p>
+                      </div>
+                    {{/paper-item}}
+                  {{/each}}
+                {{/expanded.content}}
+
+                {{!-- {{#expanded.footer}}
+                {{/expanded.footer}} --}}
+
+              {{/panel.expanded}}
+            {{/paper-expansion-panel}}
+
+
           {{/each}}
 
       {{/paper-list}}
