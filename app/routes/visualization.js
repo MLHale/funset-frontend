@@ -49,7 +49,7 @@ export default Route.extend({
 
       // Load related enrichment and term records connected to the run
       run.data.relationships.enrichments.data.forEach(function(enrichment){
-        _this.store.findRecord('enrichment',enrichment.id, {include: 'term,genes'}).then(function(enrichment){
+        _this.store.findRecord('enrichment',enrichment.id, {include: 'term,term.parents,genes'}).then(function(enrichment){
           // Enrichment model loaded, now load the term
           var term = enrichment.get('term');
           // Term model loaded, hash both together and send to the loading queue

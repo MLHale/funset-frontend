@@ -58,16 +58,22 @@ export default Controller.extend({
           y: enrichment.get('semanticdissimilarityy') ? enrichment.get('semanticdissimilarityy')*scalefactor+center : center,
         });
       });
-      // this.get('model').forEach(node => {
-      //   console.log('node', node);
-      //   node.term.get('parents').forEach(parent =>{
-      //     console.log('parent', parent.id);
-      //     var target = _this.store.peekRecord('term',parent.id);
-      //     if(target){
-      //       _this.get('renderEventQueue').addObject({type: 'addlink', source: node.id,});
-      //     }
-      //   });
-      // });
+      this.get('model').forEach(node => {
+        console.log('node', node);
+        node.term.get('parents').forEach(parent =>{
+          console.log('parent', parent.id);
+          var target = _this.store.peekRecord('term',parent.id);
+          if(_this.get('model').findBy('id',target.get('termid'))){
+            console.log('adding link', target.get('termid'));
+            _this.get('links').addObject({
+              source: node.id,
+              target: parent.get('termid'),
+              type: 'dotted',
+              value: 1
+            });
+          }
+        });
+      });
     }
   }),
   parentNodes: Ember.ArrayProxy.create({content: Ember.A()}),
