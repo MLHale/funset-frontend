@@ -49,15 +49,13 @@ export default Route.extend({
 
       // Load related enrichment and term records connected to the run
       run.data.relationships.enrichments.data.forEach(function(enrichment){
-        _this.store.findRecord('enrichment',enrichment.id).then(function(enrichment){
+        _this.store.findRecord('enrichment',enrichment.id, {include: 'term,genes'}).then(function(enrichment){
           // Enrichment model loaded, now load the term
-          enrichment.get('term').then(function(term){
-
-            // Term model loaded, hash both together and send to the loading queue
-            _this.get('loadingqueue').pushObject({'enrichment': enrichment, 'term': term});
-          })
+          var term = enrichment.get('term');
+          // Term model loaded, hash both together and send to the loading queue
+          _this.get('loadingqueue').pushObject({'enrichment': enrichment, 'term': term});
         });
-      })
+      });
       // Load meta data about the full Gene Ontology
       Ember.$.getJSON(config.host+'/api/v1/terms/get_pages').then(function(result){
         _this.set('termcount',result.data.count);

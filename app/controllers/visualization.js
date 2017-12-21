@@ -58,12 +58,59 @@ export default Controller.extend({
           y: enrichment.get('semanticdissimilarityy') ? enrichment.get('semanticdissimilarityy')*scalefactor+center : center,
         });
       });
+      // this.get('model').forEach(node => {
+      //   console.log('node', node);
+      //   node.term.get('parents').forEach(parent =>{
+      //     console.log('parent', parent.id);
+      //     var target = _this.store.peekRecord('term',parent.id);
+      //     if(target){
+      //       _this.get('renderEventQueue').addObject({type: 'addlink', source: node.id,});
+      //     }
+      //   });
+      // });
     }
   }),
   parentNodes: Ember.ArrayProxy.create({content: Ember.A()}),
   actions: {
     updateClusternum(value){
       this.set('route.clusters',value);
+    },
+    toggleSelectedCluster(cluster){
+      var _this = this;
+      var event = {type: ''}
+      if (node.selected){
+        node.selected = false;
+        node.enrichment.set('selected', false);
+        event.type = 'deselectednode';
+      }
+      else {
+        node.selected = true;
+        node.enrichment.set('selected', true);
+        event.type = 'selectednode';
+        var width = Ember.$('.term-ontology-card').width();
+        var scalefactor = width;
+        var center = scalefactor/2;
+        this.get('renderEventQueue').addObject(event);
+        node.term.get('parents').forEach(function(parent){
+          _this.store.findRecord('term',parent.id).then(function(){
+            var term = _this.store.peekRecord('term',parent.id);
+            if(!_this.get('parentNodes').findBy('id',term.get('termid'))){
+              //check for duplicates before adding
+              var parentnode = {
+                id: term.get('termid'),
+                group: 'parent',
+                term: term,
+                enrichment: null,
+                x: term.get('semanticdissimilarityx') ? term.get('semanticdissimilarityx')*scalefactor+center : center,
+                y: term.get('semanticdissimilarityy') ? term.get('semanticdissimilarityy')*scalefactor+center : center,
+              };
+              _this.get('parentNodes').addObject(parentnode);
+              _this.get('renderEventQueue').addObject({type: 'addparent', node:parentnode, source:node});
+            }
+
+          });
+        });
+      }
     },
     /*
       Handle term selections by dispatching an event of a particular type to the underlying graph component

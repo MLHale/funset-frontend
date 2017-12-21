@@ -48,6 +48,14 @@ export default Component.extend(ResizeAware,{
 
           node_objects.attr("class", function(d){return d.selected ? d.group + ' selected' : d.group});
         }
+        else if (event.type === 'addlink'){
+          this.get('links').addObject({
+            source: event.source,
+            target: event.target,
+            type: event.linestyle,
+            value: 1
+          });
+        }
         else if (event.type === 'addparent'){
           if(!this.get('nodes').findBy('id',event.node.id)){//prevent duplicate nodes
 
