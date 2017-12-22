@@ -33,8 +33,10 @@ export default Controller.extend({
       });
       clusters.addObject({name: i, nodes: this.get('model').filterBy('enrichment.cluster', i), genes: genes});
     }
+    this.set('navigation.clusterjson', clusters);
     return clusters;
   }),
+
 
   links: Ember.ArrayProxy.create({content: Ember.A([])}), //links maintained by d3 term-ontology component
 

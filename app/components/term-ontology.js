@@ -7,7 +7,7 @@ import d3 from 'npm:d3'
 import ResizeAware from 'ember-resize/mixins/resize-aware';
 
 export default Component.extend(ResizeAware,{
-  
+
   tagName: 'svg',
   classNames: ['term-ontology-graph'],
   clusterColorOptions: ["#dfc27d", "#c7eae5", "#543005", "#003c30", "#80cdc1", "#35978f", "#01665e", "#f6e8c3", "#f5f5f5", "#bf812d", "#8c510a",'#67001f','#b2182b','#d6604d','#f4a582','#fddbc7','#f7f7f7','#d1e5f0','#92c5de','#4393c3','#2166ac','#053061',"AliceBlue","AntiqueWhite","Aqua","Aquamarine","Azure","Beige","Bisque","Black","BlanchedAlmond","Blue","BlueViolet","Brown","BurlyWood","CadetBlue","Chartreuse","Chocolate","Coral","CornflowerBlue","Cornsilk","Crimson","Cyan","DarkBlue","DarkCyan","DarkGoldenRod","DarkGray","DarkGrey","DarkGreen","DarkKhaki","DarkMagenta","DarkOliveGreen","Darkorange","DarkOrchid","DarkRed","DarkSalmon","DarkSeaGreen","DarkSlateBlue","DarkSlateGray","DarkSlateGrey","DarkTurquoise","DarkViolet","DeepPink","DeepSkyBlue","DimGray","DimGrey","DodgerBlue","FireBrick","FloralWhite","ForestGreen","Fuchsia","Gainsboro","GhostWhite","Gold","GoldenRod","Gray","Grey","Green","GreenYellow","HoneyDew","HotPink","IndianRed","Indigo","Ivory","Khaki","Lavender","LavenderBlush","LawnGreen","LemonChiffon","LightBlue","LightCoral","LightCyan","LightGoldenRodYellow","LightGray","LightGrey","LightGreen","LightPink","LightSalmon","LightSeaGreen","LightSkyBlue","LightSlateGray","LightSlateGrey","LightSteelBlue","LightYellow","Lime","LimeGreen","Linen","Magenta","Maroon","MediumAquaMarine","MediumBlue","MediumOrchid","MediumPurple","MediumSeaGreen","MediumSlateBlue","MediumSpringGreen","MediumTurquoise","MediumVioletRed","MidnightBlue","MintCream","MistyRose","Moccasin","NavajoWhite","Navy","OldLace","Olive","OliveDrab","Orange","OrangeRed","Orchid","PaleGoldenRod","PaleGreen","PaleTurquoise","PaleVioletRed","PapayaWhip","PeachPuff","Peru","Pink","Plum","PowderBlue","Purple","Red","RosyBrown","RoyalBlue","SaddleBrown","Salmon","SandyBrown","SeaGreen","SeaShell","Sienna","Silver","SkyBlue","SlateBlue","SlateGray","SlateGrey","Snow","SpringGreen","SteelBlue","Tan","Teal","Thistle","Tomato","Turquoise","Violet","Wheat","White","WhiteSmoke","Yellow","YellowGreen"],
@@ -49,7 +49,7 @@ export default Component.extend(ResizeAware,{
           console.log('refreshing clusters');
           var transform = d3.zoomTransform(d3.select(".zoom-layer").node());
           var node_objects= this.get('nodelayer').selectAll("circle").data(this.get('_nodes'), function(d) { return d.id;});
-          node_objects.attr("style", function(d){return "fill: "+context.get('clusterColorOptions')[d.enrichment.get('cluster')]+";"});
+          node_objects.style("fill", function(d){return context.get('clusterColorOptions')[d.enrichment.get('cluster')]});
           node_objects.exit().remove()
 
           this.updateClusterLabels();
@@ -348,6 +348,9 @@ export default Component.extend(ResizeAware,{
     // Layer for zoom bounding box
     this.set('zoomlayer',svg.append("rect")
       .attr("class", "zoom-layer")
+      .style("cursor", "move")
+      .style("fill", "none")
+      .style("pointer-events", "all")
       .attr("width", width)
       .attr("height", height)
       .call(zoom));
@@ -392,12 +395,17 @@ export default Component.extend(ResizeAware,{
             .on("drag", (d, i) => context.dragged(d, i, context))
             .on("end", (d, i) => context.dragended(d, i, context)))
         .attr("class", function(d){return d.selected ? d.group + ' selected' : d.group})
-        .attr("style", function(d){return "fill: "+context.get('clusterColorOptions')[d.enrichment.get('cluster')]+";"});
+        .style("fill", function(d){return context.get('clusterColorOptions')[d.enrichment.get('cluster')]})
+        .style("stroke", "black")
+        .style("stroke-width", "3px");
 
     // Setup edges and draw them on the graph - attaching a new svg line for each edge
     var link_objects = linklayer.selectAll("line").data(graph.links);
     link_objects.enter().append("line")
       .attr("class", function(d) { return "link " + d.type; })
+      .style("stroke-dasharray", 5)
+      .style("stroke", "aaa")
+      .style("stroke-width", "1.5px")
       .attr("marker-end", function(d) { return "url(#" + d.type + ")"; });
 
     link_objects.exit().remove();

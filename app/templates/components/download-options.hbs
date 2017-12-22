@@ -1,1 +1,9 @@
-{{yield}}
+{{#paper-button raised=true onClick=(action "downloadSvg")}}
+  {{paper-icon "file_download"}} SVG
+{{/paper-button}}
+{{#paper-button raised=true onClick=(action "downloadJSON")}}
+  {{paper-icon "file_download"}} JSON
+{{/paper-button}}
+{{#paper-button raised=true disabled=true}}
+  {{paper-icon "file_download"}} PNG
+{{/paper-button}}

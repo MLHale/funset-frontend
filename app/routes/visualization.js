@@ -27,6 +27,10 @@ export default Route.extend({
     buttons.clear();
     buttons.addObject('download-options');
   },
+  deactivate() {
+    var buttons = this.get('navigation').get('dynamicbuttons')
+    buttons.clear();
+  },
   beforeModel(){
     //reset loading variables that control the interface
     this.get('loadingqueue').clear();
