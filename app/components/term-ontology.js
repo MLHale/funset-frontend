@@ -458,38 +458,38 @@ export default Component.extend(ResizeAware,{
     Handles 'click' events on nodes by toggling the selected flag on the data item and the css class. Should mirror the controller functionality.
   */
   clicked(d, i){
-    var _this = this;
-    var node = d;
-    node.term.get('parents').forEach(function(parent){
-      _this.store.findRecord('term',parent.id).then(function(){
-        var term = _this.store.peekRecord('term',parent.id);
-        if(!_this.get('parentNodes').findBy('id',term.get('termid'))){//check for duplicates before adding
-          var width = Ember.$('.term-ontology-card').width();
-          var scalefactor = width;
-          var center = scalefactor/2;
-
-          // Add parent node to be loaded
-          var parentnode = {
-            id: term.get('termid'),
-            group: 'parent',
-            term: term,
-            enrichment: null,
-            x: term.get('semanticdissimilarityx') ? term.get('semanticdissimilarityx')*scalefactor+center : center,
-            y: term.get('semanticdissimilarityy') ? term.get('semanticdissimilarityy')*scalefactor+center : center,
-          };
-          _this.get('parentNodes').addObject(parentnode);
-
-          // Update graph using the render queue
-          _this.get('renderEventQueue').addObject({type: 'addparent', node:parentnode, source:node});
-        }
-
-      });
-    });
-
-    // Update state to reflect that the node is currently selected
-    d.selected = d.selected ? false : true;
-    d.enrichment.set('selected',!d.enrichment.get('selected'))
-    this.get('nodelayer').selectAll("circle").attr("class", function(d){return d.selected ? d.group + ' selected' : d.group});
+    // var _this = this;
+    // var node = d;
+    // node.term.get('parents').forEach(function(parent){
+    //   _this.store.findRecord('term',parent.id).then(function(){
+    //     var term = _this.store.peekRecord('term',parent.id);
+    //     if(!_this.get('parentNodes').findBy('id',term.get('termid'))){//check for duplicates before adding
+    //       var width = Ember.$('.term-ontology-card').width();
+    //       var scalefactor = width;
+    //       var center = scalefactor/2;
+    //
+    //       // Add parent node to be loaded
+    //       var parentnode = {
+    //         id: term.get('termid'),
+    //         group: 'parent',
+    //         term: term,
+    //         enrichment: null,
+    //         x: term.get('semanticdissimilarityx') ? term.get('semanticdissimilarityx')*scalefactor+center : center,
+    //         y: term.get('semanticdissimilarityy') ? term.get('semanticdissimilarityy')*scalefactor+center : center,
+    //       };
+    //       _this.get('parentNodes').addObject(parentnode);
+    //
+    //       // Update graph using the render queue
+    //       _this.get('renderEventQueue').addObject({type: 'addparent', node:parentnode, source:node});
+    //     }
+    //
+    //   });
+    // });
+    //
+    // // Update state to reflect that the node is currently selected
+    // d.selected = d.selected ? false : true;
+    // d.enrichment.set('selected',!d.enrichment.get('selected'))
+    // this.get('nodelayer').selectAll("circle").attr("class", function(d){return d.selected ? d.group + ' selected' : d.group});
   },
   /*
     Handles drag `start` events on nodes by logging starting position of the node d being acted upon by a d3 event.
