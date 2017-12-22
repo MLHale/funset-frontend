@@ -43,6 +43,18 @@ export default Component.extend(ResizeAware,{
 
           node_objects.attr("class", function(d){return d.selected ? d.group + ' selected' : d.group});
         }
+        else if (event.type === 'refreshClusters'){
+          // Update the simulation to refresh its data
+          var context = this;
+          console.log('refreshing clusters');
+          var transform = d3.zoomTransform(d3.select(".zoom-layer").node());
+          var node_objects= this.get('nodelayer').selectAll("circle").data(this.get('_nodes'), function(d) { return d.id;});
+          node_objects.attr("style", function(d){return "fill: "+context.get('clusterColorOptions')[d.enrichment.get('cluster')]+";"});
+          node_objects.exit().remove()
+
+          this.updateClusterLabels();
+          this.get('simulation').alpha(.01).restart();
+        }
         else if (event.type === 'deselectednode'){
           var node_objects= this.get('nodelayer').selectAll("circle").data(this.get('_nodes'), function(d) { return d.id;});
 
@@ -132,6 +144,24 @@ export default Component.extend(ResizeAware,{
         text_objects = textlayer.selectAll("text").data({}, function(d) { return d.id;});
         text_objects.exit().remove();
     }
+  },
+  /*
+   Renders Clusterlabels
+  */
+  updateClusterLabels(){
+    var graph = {nodes: this.get('_nodes'), links: this.get('_links')};
+    var clusterlayer = this.get('clusterlayer');
+    var cluster_metoid_nodes = graph.nodes.filter(node => node.enrichment.get('medoid')===true);
+    var cluster_text_objects = clusterlayer.selectAll("text").data(cluster_metoid_nodes);
+    var transform = d3.zoomTransform(d3.select(".zoom-layer").node());
+    cluster_text_objects.enter().append("svg:text")
+      .attr("x", function(d) { return d.x + (d.enrichment!=null ? d.enrichment.get('level')+5 : 13); })
+      .attr("y", function(d) { return d.y + (d.enrichment!=null ? d.enrichment.get('level')/2 : 4); })
+      .attr("transform", transform)
+      .text(function(d) { return "Cluster "+ d.enrichment.get('cluster') + " medoid - "+d.id+ ' ('+d.term.get('name')+')'; })
+        .attr("style", "font-size:200%;");
+    cluster_text_objects.exit().remove();
+
   },
   /*
     Turns link forces on or off and re-renders them depending on the toggle parameter `linkForcesOn`
@@ -371,13 +401,8 @@ export default Component.extend(ResizeAware,{
 
     link_objects.exit().remove();
 
-    var cluster_metoid_nodes = graph.nodes.filter(node => node.enrichment.get('medoid')===true);
-    var cluster_text_objects = clusterlayer.selectAll("text").data(cluster_metoid_nodes);
-    cluster_text_objects.enter().append("svg:text")
-      .attr("x", function(d) { return d.x + (d.enrichment!=null ? d.enrichment.get('level')+5 : 13); })
-      .attr("y", function(d) { return d.y + (d.enrichment!=null ? d.enrichment.get('level')/2 : 4); })
-      .text(function(d) { return "Cluster "+ d.enrichment.get('cluster') + " medoid - "+d.id+ ' ('+d.term.get('name')+')'; })
-        .attr("style", "font-size:200%;");
+    //setup cluster labels
+    this.updateClusterLabels();
 
     // Setup text showTermLabels. If enabled each node should have a label corresponding to its id
     this.updateTextLabels();

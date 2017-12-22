@@ -41,7 +41,7 @@ export default Route.extend({
       + '&organism='+  encodeURIComponent(params.organism);
 
     Ember.$.getJSON(request_url).then(function(run){
-      console.log(run);
+      // console.log(run);
       // Total terms that will need to be loaded
       _this.set('termstoload', run.data.relationships.enrichments.data.length);
 

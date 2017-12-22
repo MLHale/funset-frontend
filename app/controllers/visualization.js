@@ -87,16 +87,21 @@ export default Controller.extend({
   parentNodes: Ember.ArrayProxy.create({content: Ember.A()}),
   actions: {
     updateClusternum(clusters){
-      var _this = this;
-      this.set('route.clusters',clusters);
-      var request_url = this.get('route.host')+'/api/v1/runs/'+this.get('route.run.id')+'/recluster?'
-        + '&clusters='+  encodeURIComponent(clusters);
-      Ember.$.getJSON(request_url).then(function(run){
-        console.log(run);
-        run.data.type = 'run';//ember data expects raw JSONAPI data to be typed singular for push
-        var loadedrun = _this.store.push(run);
-
-      });
+      if(clusters>=1 &&clusters <=this.get('route.termstoload')){
+        var _this = this;
+        this.set('route.clusters',clusters);
+        var request_url = this.get('route.host')+'/api/v1/runs/'+this.get('route.run.id')+'/recluster?'
+          + 'clusters='+  encodeURIComponent(clusters);
+        Ember.$.getJSON(request_url).then(function(run){
+          // console.log(run);
+          run.data.type = 'run';//ember data expects raw JSONAPI data to be typed singular for push
+          var loadedrun = _this.store.push(run);
+          _this.get('renderEventQueue').addObject({type: 'refreshClusters'});
+        });
+      }
+    },
+    test(){
+      console.log('dropped');
     },
     toggleSelectedCluster(cluster){
       var _this = this;
