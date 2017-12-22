@@ -84,10 +84,12 @@ export default Controller.extend({
   parentNodes: Ember.ArrayProxy.create({content: Ember.A()}),
   clusterdragging: false,
   clusterslideractive: false,
-  test: 20,
-  updateClusters: Ember.observer("clusterslideractive", function(value){
+  clusterslideractive: false,
+  clusterfieldsubmitted: false,
+  updateClusters: Ember.observer("clusterslideractive", "clustersfieldactive", "clusterfieldsubmitted", function(value){
     // console.log('updating clusters observer');
-    if(!this.get('clusterslideractive')){
+    if(!this.get('clusterslideractive') || !this.get('clustersfieldactive') || this.get('clusterfieldsubmitted')){
+      this.set('clusterfieldsubmitted', false);
       var clusters = this.get('route.clusters');
       var _this = this;
       var request_url = _this.get('route.host')+'/api/v1/runs/'+_this.get('route.run.id')+'/recluster?'
@@ -104,6 +106,9 @@ export default Controller.extend({
 
   }),
   actions: {
+    clusterFieldSubmitted(){
+      this.set('clusterfieldsubmitted', !this.get('clusterfieldsubmitted'));
+    },
     toggleSelectedCluster(cluster){
       // var _this = this;
       // var event = {type: ''}
