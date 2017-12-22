@@ -3,7 +3,7 @@ import Controller from '@ember/controller';
 export default Controller.extend({
   pvaluethreshold: 0.05,
   pvalueslider: 5,
-  numclusters: 10,
+  numclusters: 1,
   organismselected: {code: 'hsa', name: 'Homo sapiens (human)'},
   organismoptions: [
     {code: 'hsa', name: 'Homo sapiens (human)'},

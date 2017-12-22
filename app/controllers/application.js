@@ -1,13 +1,6 @@
 import Controller from '@ember/controller';
 
 export default Controller.extend({
-  menuitems: Ember.A([
-    // {
-    //   title: 'Some title',
-    //   icon: 'material icon name',
-    //   link: 'http://somelink.com',
-    // },
-  ]),
   actions: {
     // login(){
     //   this.get('auth').login();

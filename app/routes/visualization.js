@@ -22,6 +22,11 @@ export default Route.extend({
   clusters: 0,
   loadingqueue: Ember.ArrayProxy.create({ content: Ember.A() }),
   host: config.host,
+  activate() {
+    var buttons = this.get('navigation').get('dynamicbuttons')
+    buttons.clear();
+    buttons.addObject('download-options');
+  },
   beforeModel(){
     //reset loading variables that control the interface
     this.get('loadingqueue').clear();

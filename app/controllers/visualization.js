@@ -102,9 +102,6 @@ export default Controller.extend({
         });
       }
     },
-    test(){
-      console.log('dropped');
-    },
     toggleSelectedCluster(cluster){
       var _this = this;
       var event = {type: ''}

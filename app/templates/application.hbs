@@ -30,6 +30,18 @@
         {{#link-to 'index'}}Pathway Enrichment Visualization{{/link-to}}
       </h2>
       <span class="flex"></span>
+      {{#each navigation.dynamicbuttons as |dynamicbutton|}}
+        <li>{{component menu}}</li>
+      {{/each}}
+      {{#paper-button raised=true}}
+        {{paper-icon "file_download"}} SVG
+      {{/paper-button}}
+      {{#paper-button raised=true}}
+        {{paper-icon "file_download"}} SVG
+      {{/paper-button}}
+      {{#paper-button mini=true aria-label="Favorite"}}
+        {{paper-icon "file_download"}}
+      {{/paper-button}}
   {{!--
       <h2>
       {{#if auth.stored}}
