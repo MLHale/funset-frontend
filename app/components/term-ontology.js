@@ -161,7 +161,8 @@ export default Component.extend(ResizeAware,{
       .text(function(d) { return "Cluster "+ d.enrichment.get('cluster') + " medoid - "+d.id+ ' ('+d.term.get('name')+')'; })
         .attr("style", "font-size:200%;");
     cluster_text_objects.exit().remove();
-
+    cluster_text_objects.text(function(d) { return "Cluster "+ d.enrichment.get('cluster') + " medoid - "+d.id+ ' ('+d.term.get('name')+')'; })
+      .attr("style", "font-size:200%;");
   },
   /*
     Turns link forces on or off and re-renders them depending on the toggle parameter `linkForcesOn`

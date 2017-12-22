@@ -15,7 +15,15 @@ export default Controller.extend({
     return this.get('model').filterBy('enrichment').sortBy('enrichment.level').reverse()
   }),
 
-  sortedNodeClusters: Ember.computed('model.@each', 'model.@each.selected', 'route.clusters', function(){
+  modelEnrichments: Ember.computed('model.@each', 'model.@each.selected', 'route.clusters', function(){
+    var enrichments = this.get('model').forEach(node =>{
+        return node.enrichment;
+    });
+    console.log('enrichments',enrichments);
+    return enrichments;
+  }),
+
+  sortedNodeClusters: Ember.computed('model.@each', 'model.@each.selected', 'renderEventQueue.@each','route.clusters', function(){
     var clusters = Ember.ArrayProxy.create({content: Ember.A([])});
     for(var i=0; i<this.get("route.clusters"); i++){
       var genes = Ember.ArrayProxy.create({content: Ember.A([])});
@@ -26,12 +34,6 @@ export default Controller.extend({
       clusters.addObject({name: i, nodes: this.get('model').filterBy('enrichment.cluster', i), genes: genes});
     }
     return clusters;
-  }),
-
-  sortedGeneClusters: Ember.computed('model.@each', 'model.@each.selected', 'route.clusters', function(){
-    var genelists = Ember.ArrayProxy.create({content: Ember.A([])});
-
-    return genelists;
   }),
 
   links: Ember.ArrayProxy.create({content: Ember.A([])}), //links maintained by d3 term-ontology component
