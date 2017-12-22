@@ -15,15 +15,7 @@ export default Controller.extend({
     return this.get('model').filterBy('enrichment').sortBy('enrichment.level').reverse()
   }),
 
-  modelEnrichments: Ember.computed('model.@each', 'model.@each.selected', 'route.clusters', function(){
-    var enrichments = this.get('model').forEach(node =>{
-        return node.enrichment;
-    });
-    console.log('enrichments',enrichments);
-    return enrichments;
-  }),
-
-  sortedNodeClusters: Ember.computed('model.@each', 'model.@each.selected', 'renderEventQueue.@each','route.clusters', function(){
+  sortedNodeClusters: Ember.computed('model.@each', 'model.@each.selected', 'renderEventQueue.@each', function(){
     var clusters = Ember.ArrayProxy.create({content: Ember.A([])});
     for(var i=0; i<this.get("route.clusters"); i++){
       var genes = Ember.ArrayProxy.create({content: Ember.A([])});
@@ -73,6 +65,7 @@ export default Controller.extend({
           y: enrichment.get('semanticdissimilarityy') ? enrichment.get('semanticdissimilarityy')*scalefactor+center : center,
         });
       });
+      // this.get('renderEventQueue').addObject({type: 'starting'});
       this.get('model').forEach(node => {
         node.term.get('parents').forEach(parent =>{
           var target = _this.store.peekRecord('term',parent.id);
@@ -90,22 +83,25 @@ export default Controller.extend({
   }),
   parentNodes: Ember.ArrayProxy.create({content: Ember.A()}),
   clusterdragging: false,
-  updateClusters: Ember.observer("clusterdragging", function(){
-    var clusters = this.get('route.clusters');
-    console.log('updating clusters observer');
-    if(clusters>=1 &&clusters <=this.get('route.termstoload')){
+  clusterslideractive: false,
+  test: 20,
+  updateClusters: Ember.observer("clusterslideractive", function(value){
+    // console.log('updating clusters observer');
+    if(!this.get('clusterslideractive')){
+      var clusters = this.get('route.clusters');
       var _this = this;
-      if(!_this.get('clusterdragging')){
-        var request_url = _this.get('route.host')+'/api/v1/runs/'+_this.get('route.run.id')+'/recluster?'
-          + 'clusters='+  encodeURIComponent(clusters);
-        Ember.$.getJSON(request_url).then(function(run){
-          // console.log(run);
-          run.data.type = 'run';//ember data expects raw JSONAPI data to be typed singular for push
-          var loadedrun = _this.store.push(run);
-          _this.get('renderEventQueue').addObject({type: 'refreshClusters'});
-        });
-      }
+      var request_url = _this.get('route.host')+'/api/v1/runs/'+_this.get('route.run.id')+'/recluster?'
+        + 'clusters='+  encodeURIComponent(clusters);
+      Ember.$.getJSON(request_url).then(function(run){
+        // console.log(run);
+        run.data.type = 'run';//ember data expects raw JSONAPI data to be typed singular for push
+        // console.log('updating clusters ');
+        var loadedrun = _this.store.pushPayload(run);
+        // console.log('updated clusters ');
+        _this.get('renderEventQueue').addObject({type: 'refreshClusters'});
+      });
     }
+
   }),
   actions: {
     toggleSelectedCluster(cluster){

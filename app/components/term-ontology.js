@@ -33,9 +33,11 @@ export default Component.extend(ResizeAware,{
   currentScaleFactorY: 1,
 
   updating: false,
-  renderEventProcessor: Ember.observer('renderEventQueue.@each', function(){
+  renderEventProcessor: Ember.observer('renderEventQueue','renderEventQueue.@each', function(){
+
     var renderEventQueue = this.get('renderEventQueue');
     var event = renderEventQueue.get('firstObject');
+    // console.log('renderQueue invoked',event);
     if(event){
       if(renderEventQueue.get('length')>0&&event.type!==null){
         if (event.type === 'selectednode'){

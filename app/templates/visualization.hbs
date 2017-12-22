@@ -33,7 +33,7 @@
         {{#paper-subheader}}Graph options{{/paper-subheader}}
           <div class="layout layout-align-center-center slider-container graph-options-slider">
             <span style="margin-right: 16px;">Number of Clusters</span>
-            {{paper-slider class="flex" dragging=clusterdragging min=1 max=route.termstoload value=route.clusters onChange=(action (mut route.clusters))}}
+            {{paper-slider class="flex" discrete=true step=1 active=clusterslideractive min=1 max=route.termstoload value=route.clusters onChange=(action (mut route.clusters))}}
             {{paper-input value=route.clusters onChange=(action (mut route.clusters))}}
           </div>
         {{#paper-item as |controls|}}
