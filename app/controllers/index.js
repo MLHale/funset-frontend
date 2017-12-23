@@ -24,7 +24,7 @@ export default Controller.extend({
     message: 'Genes must be listed in a comma seperated value format with no white spaces or line feed characters. e.g. gene1,gene2,...',
     validate: (inputValue) => {
       // let csvPattern = /^([A-Za-z0-9])+(,[A-Za-z0-9]+)*$/;
-      let csvPattern = /^([^;,\<\>\s],?){1}([^\s;,\<\>]+)*$/;
+      let csvPattern = /^([^;,\<\>\s],?)+$/;
 
       return csvPattern.test(inputValue);
     }
