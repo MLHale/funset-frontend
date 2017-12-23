@@ -29,7 +29,7 @@ export default Controller.extend({
           node.enrichment.get('genes').forEach(gene=>genes.addObject(gene));
 
         });
-        clusters.addObject({id:i, name: i, nodes: this.get('model').filterBy('enrichment.cluster', i).sortBy('enrichment.level').reverse(), genes: genes});
+        clusters.addObject(Ember.Object.create({id:i, name: i, nodes: this.get('model').filterBy('enrichment.cluster', i).sortBy('enrichment.level').reverse(), genes: genes}));
       }
       this.set('navigation.clusterjson', clusters);
     }
@@ -122,14 +122,19 @@ export default Controller.extend({
       var _this = this;
       var event = {type: ''}
       if (cluster.selected){
-        cluster.selected = false;
-        cluster.enrichment.set('selected', false);
+        cluster.set('selected', false);
+        cluster.nodes.forEach(node=>{
+          node.clusterselected= false;
+        });
         event.type = 'dehighlightcluster';
         this.get('renderEventQueue').addObject(event);
       }
       else {
         console.log(cluster);
-        cluster.selected = true
+        cluster.set('selected', true);
+        cluster.nodes.forEach(node=>{
+          node.clusterselected = true;
+        });
         event.type = 'highlightcluster';
         this.get('renderEventQueue').addObject(event);
       }

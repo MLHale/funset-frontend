@@ -58,6 +58,20 @@ export default Component.extend(ResizeAware,{
             .style("stroke", "black")
             .style("stroke-width", "3px");
         }
+        else if (event.type === 'highlightcluster'){
+          var node_objects= this.get('nodelayer').selectAll("circle").data(this.get('_nodes'), function(d) { return d.id;});
+          console.log('highlightcluster');
+          //update all deselected items
+          node_objects.filter(d=>{return !d.clusterselected})
+          .style("opacity", "0.1")
+        }
+        else if (event.type === 'dehighlightcluster'){
+          var node_objects= this.get('nodelayer').selectAll("circle").data(this.get('_nodes'), function(d) { return d.id;});
+          console.log('dehighlightcluster');
+          //update all deselected items
+          node_objects.filter(d=>{return !d.clusterselected})
+            .style("opacity", "1")
+        }
         else if (event.type === 'refreshClusters'){
           // Update the simulation to refresh its data
           var context = this;
