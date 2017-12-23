@@ -78,6 +78,13 @@
                 {{#expanded.header}}
                   <div class="md-panel-title">Cluster {{cluster.name}}</div>
                   <div class="md-panel-summary">{{cluster.nodes.length}} Terms / {{cluster.genes.length}} Genes</div>
+                  {{#paper-button onClick=(action "toggleSelectedCluster" cluster)}}
+                    {{#if cluster.selected}}
+                      {{paper-icon "visibility_off"}} Hide in graph
+                    {{else}}
+                      {{paper-icon "visibility"}} View in graph
+                    {{/if}}
+                  {{/paper-button}}
                   {{cluster-download cluster=cluster}}
                   {{paper-icon "keyboard_arrow_up"}}
                 {{/expanded.header}}
@@ -98,7 +105,11 @@
                       {{#termsexpanded.content}}
                         {{#each cluster.nodes as |node|}}
                           {{#paper-item class="md-3-line" onClick=(action "toggleSelectedTerm" node) as |controls|}}
-                            {{paper-icon "title" class=(concat "md-avatar-icon" (if node.enrichment.selected " term-selected"))}}
+                            {{#if node.enrichment.selected}}
+                              {{paper-icon "visibility_off" class=(concat "md-avatar-icon" (if node.enrichment.selected " term-selected"))}}
+                            {{else}}
+                              {{paper-icon "visibility" class=(concat "md-avatar-icon" (if node.enrichment.selected " term-selected"))}}
+                            {{/if}}
                             <div class="md-list-item-text">
                               <h3>
                                 <strong>{{node.term.termid}} [p={{node.enrichment.pvalue}},l={{node.enrichment.level}}]</strong>

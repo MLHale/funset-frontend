@@ -275,8 +275,7 @@ export default Component.extend(ResizeAware,{
     axislabellayer.selectAll('*').remove();
     //x-axis label
     axislabellayer.append("rect")
-      .attr("transform","translate(" + (((this.get('width')+62)/2)-132) + " ," + -2 + ")")
-      .attr("width", 260)
+      .attr("width", this.$().parents('md-card-content').width())
       .attr("height", 20)
       .style("fill","#FFF")
 
@@ -287,9 +286,8 @@ export default Component.extend(ResizeAware,{
 
     //y-axis label
     axislabellayer.append("rect")
-      .attr("transform","translate(" + 0 + " ," + ((this.get('height')/2)+132)+ ") rotate(-90) ")
-      .attr("width", 260)
-      .attr("height", 20)
+      .attr("width", 62)
+      .attr("height", this.$().parents('md-card-content').height())
       .style("fill","#FFF")
 
     axislabellayer.append('text')
@@ -386,17 +384,6 @@ export default Component.extend(ResizeAware,{
     var xAxis = this.set('xAxis', d3.axisBottom(xAxisScale));
     var yAxis = this.set('yAxis', d3.axisLeft(yAxisScale));
 
-    // Setup and Draw Axis layers
-    this.set('xaxislayer',svg.append("g")
-        .attr("class", "axis xaxis-layer")
-        .attr("transform", "translate(62," + 20+ ")")
-        .call(xAxis));
-
-    this.set('yaxislayer', svg.append("g")
-        .attr("class", "axis yaxis-layer")
-        .attr("transform", "translate(62," + 0+ ")")
-        .call(yAxis));
-
     // Layer for zoom bounding box
     this.set('zoomlayer',svg.append("rect")
       .attr("class", "zoom-layer")
@@ -420,6 +407,18 @@ export default Component.extend(ResizeAware,{
     // Layer for axis labels
     this.set('axislabellayer',svg.append("g").attr("class", "axislabel-layer"));
     this.updateAxisLabels()
+    // Setup and Draw Axis layers
+    this.set('xaxislayer',svg.append("g")
+        .attr("class", "axis xaxis-layer")
+        .attr("transform", "translate(62," + 20+ ")")
+        .call(xAxis));
+
+    this.set('yaxislayer', svg.append("g")
+        .attr("class", "axis yaxis-layer")
+        .attr("transform", "translate(62," + 0+ ")")
+        .call(yAxis));
+
+    this.didResize()
 
     // Schedule a call to render the graph
     Ember.run.scheduleOnce('render', this, this.renderGraph);
