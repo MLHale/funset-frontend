@@ -60,16 +60,44 @@ export default Component.extend(ResizeAware,{
         }
         else if (event.type === 'highlightcluster'){
           var node_objects= this.get('nodelayer').selectAll("circle").data(this.get('_nodes'), function(d) { return d.id;});
+          var link_objects = this.get('linklayer').selectAll("line")
+          var cluster_text_objects = this.get('clusterlayer').selectAll("text")
+
           console.log('highlightcluster');
           //update all deselected items
+
+          //dimish non-selected items
           node_objects.filter(d=>{return !d.clusterselected})
-          .style("opacity", "0.1")
+            .style("opacity", "0.1")
+
+          link_objects.filter(d=>{return !d.source.clusterselected})
+            .style("opacity", "0.1")
+
+          cluster_text_objects.filter(d=>{return !d.clusterselected})
+            .style("opacity", "0.1")
+
+          //highlight selected items if they are currently diminished
+          node_objects.filter(d=>{return d.clusterselected})
+            .style("opacity", "1")
+
+          link_objects.filter(d=>{return d.source.clusterselected})
+            .style("opacity", "1")
+
+          cluster_text_objects.filter(d=>{return d.clusterselected})
+            .style("opacity", "1")
+
         }
         else if (event.type === 'dehighlightcluster'){
           var node_objects= this.get('nodelayer').selectAll("circle").data(this.get('_nodes'), function(d) { return d.id;});
           console.log('dehighlightcluster');
           //update all deselected items
           node_objects.filter(d=>{return !d.clusterselected})
+            .style("opacity", "1")
+          var link_objects = this.get('linklayer').selectAll("line")
+          link_objects.filter(d=>{return !d.source.clusterselected})
+            .style("opacity", "1");
+          var cluster_text_objects = this.get('clusterlayer').selectAll("text")
+          cluster_text_objects.filter(d=>{return !d.clusterselected})
             .style("opacity", "1")
         }
         else if (event.type === 'refreshClusters'){
