@@ -14,19 +14,26 @@ export default Controller.extend({
   sortedNodes: Ember.computed('model.@each', 'model.@each.selected', function(){
     return this.get('model').filterBy('enrichment').sortBy('enrichment.level').reverse()
   }),
+  refreshClusters: false,
 
-  sortedNodeClusters: Ember.computed('model.@each', 'model.@each.selected', 'renderEventQueue.@each', function(){
-    var clusters = Ember.ArrayProxy.create({content: Ember.A([])});
-    for(var i=0; i<this.get("route.clusters"); i++){
-      var genes = Ember.ArrayProxy.create({content: Ember.A([])});
-      this.get('model').filterBy('enrichment.cluster', i).forEach(node =>{
-        node.enrichment.get('genes').forEach(gene=>genes.addObject(gene));
+  sortedNodeClusters: Ember.ArrayProxy.create({content: Ember.A([])}),
+  sortedNodeClustersUpdater: Ember.observer('refreshClusters', function(){
+    if(this.get('refreshClusters')){
+      var clusters = this.get('sortedNodeClusters');
+      var clusterui = this.get('clusterui');
+      clusters.clear();
 
-      });
-      clusters.addObject({name: i, nodes: this.get('model').filterBy('enrichment.cluster', i), genes: genes});
+      for(var i=0; i<this.get("route.clusters"); i++){
+        var genes = Ember.ArrayProxy.create({content: Ember.A([])});
+        this.get('model').filterBy('enrichment.cluster', i).forEach(node =>{
+          node.enrichment.get('genes').forEach(gene=>genes.addObject(gene));
+
+        });
+        clusters.addObject({id:i, name: i, nodes: this.get('model').filterBy('enrichment.cluster', i).sortBy('enrichment.level').reverse(), genes: genes});
+      }
+      this.set('navigation.clusterjson', clusters);
     }
-    this.set('navigation.clusterjson', clusters);
-    return clusters;
+    this.set('refreshClusters',false);
   }),
 
 
@@ -65,6 +72,7 @@ export default Controller.extend({
           y: enrichment.get('semanticdissimilarityy') ? enrichment.get('semanticdissimilarityy')*scalefactor+center : center,
         });
       });
+      this.set('refreshClusters', true);
       // this.get('renderEventQueue').addObject({type: 'starting'});
       this.get('model').forEach(node => {
         node.term.get('parents').forEach(parent =>{
@@ -101,6 +109,7 @@ export default Controller.extend({
         var loadedrun = _this.store.pushPayload(run);
         // console.log('updated clusters ');
         _this.get('renderEventQueue').addObject({type: 'refreshClusters'});
+        _this.set('refreshClusters',true);
       });
     }
 
@@ -110,6 +119,20 @@ export default Controller.extend({
       this.set('clusterfieldsubmitted', !this.get('clusterfieldsubmitted'));
     },
     toggleSelectedCluster(cluster){
+      var _this = this;
+      var event = {type: ''}
+      if (cluster.selected){
+        cluster.selected = false;
+        cluster.enrichment.set('selected', false);
+        event.type = 'dehighlightcluster';
+        this.get('renderEventQueue').addObject(event);
+      }
+      else {
+        console.log(cluster);
+        cluster.selected = true
+        event.type = 'highlightcluster';
+        this.get('renderEventQueue').addObject(event);
+      }
       // var _this = this;
       // var event = {type: ''}
       // if (node.selected){
@@ -150,6 +173,22 @@ export default Controller.extend({
       Handle term selections by dispatching an event of a particular type to the underlying graph component
     */
     toggleSelectedTerm(node){
+      var _this = this;
+      var event = {type: ''}
+      if (node.selected){
+        node.selected = false;
+        node.enrichment.set('selected', false);
+        event.type = 'deselectednode';
+        event.node = node;
+        this.get('renderEventQueue').addObject(event);
+      }
+      else {
+        node.selected = true;
+        node.enrichment.set('selected', true);
+        event.type = 'selectednode';
+        event.node = node;
+        this.get('renderEventQueue').addObject(event);
+      }
       // var _this = this;
       // var event = {type: ''}
       // if (node.selected){

@@ -26,8 +26,7 @@ export default Component.extend(ResizeAware,{
   _nodes: Ember.computed.alias('nodes.content'),
   links: Ember.ArrayProxy.create({content: Ember.A()}),
   _links: Ember.computed.alias('links.content'),
-  termloadingqueue: Ember.ArrayProxy.create({content: Ember.A()}),
-  linkloadingqueue: Ember.ArrayProxy.create({content: Ember.A()}),
+
   renderEventQueue: Ember.ArrayProxy.create({content: Ember.A()}),
   currentScaleFactorX: 1,
   currentScaleFactorY: 1,
@@ -41,9 +40,23 @@ export default Component.extend(ResizeAware,{
     if(event){
       if(renderEventQueue.get('length')>0&&event.type!==null){
         if (event.type === 'selectednode'){
+          console.log('selectednode');
           var node_objects= this.get('nodelayer').selectAll("circle").data(this.get('_nodes'), function(d) { return d.id;});
 
-          node_objects.attr("class", function(d){return d.selected ? d.group + ' selected' : d.group});
+          //update all selected items
+          node_objects.filter(d=>{return d.selected})
+            .attr("class", function(d){return d.group + ' selected'})
+            .style("stroke", "red")
+            .style("stroke-width", "6px");
+        }
+        else if (event.type === 'deselectednode'){
+          var node_objects= this.get('nodelayer').selectAll("circle").data(this.get('_nodes'), function(d) { return d.id;});
+          console.log('deselectednode');
+          //update all deselected items
+          node_objects.filter(d=>{return !d.selected})
+            .attr("class", function(d){return d.group})
+            .style("stroke", "black")
+            .style("stroke-width", "3px");
         }
         else if (event.type === 'refreshClusters'){
           // Update the simulation to refresh its data
@@ -56,11 +69,6 @@ export default Component.extend(ResizeAware,{
 
           this.updateClusterLabels();
           this.get('simulation').alpha(.01).restart();
-        }
-        else if (event.type === 'deselectednode'){
-          var node_objects= this.get('nodelayer').selectAll("circle").data(this.get('_nodes'), function(d) { return d.id;});
-
-          node_objects.attr("class", function(d){return d.selected ? d.group + ' selected' : d.group});
         }
         else if (event.type === 'addlink'){
           this.get('links').addObject({
@@ -434,6 +442,8 @@ export default Component.extend(ResizeAware,{
   willDestroyElement(){
     //clear bound node data before destroying
     this.get('nodes').clear();
+    this.get('links').clear();
+    this.get('renderEventQueue').clear();
     this._super(...arguments);
   },
   /*

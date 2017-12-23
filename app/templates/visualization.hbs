@@ -59,11 +59,18 @@
       {{/paper-list}}
       {{#paper-list class="scrollabletermlist"}}
         {{#paper-subheader}}Terms{{/paper-subheader}}
-          {{#each sortedNodeClusters as |cluster|}}
+          {{#each sortedNodeClusters as |cluster index|}}
             {{#paper-expansion-panel as |panel|}}
               {{#panel.collapsed}}
                 <div class="md-panel-title">Cluster {{cluster.name}}</div>
                 <div class="md-panel-summary">{{cluster.nodes.length}} Terms / {{cluster.genes.length}} Genes</div>
+                {{#paper-button onClick=(action "toggleSelectedCluster" cluster)}}
+                  {{#if cluster.selected}}
+                    {{paper-icon "visibility_off"}} Hide in graph
+                  {{else}}
+                    {{paper-icon "visibility"}} View in graph
+                  {{/if}}
+                {{/paper-button}}
                 {{paper-icon "keyboard_arrow_down"}}
               {{/panel.collapsed}}
 
@@ -71,6 +78,7 @@
                 {{#expanded.header}}
                   <div class="md-panel-title">Cluster {{cluster.name}}</div>
                   <div class="md-panel-summary">{{cluster.nodes.length}} Terms / {{cluster.genes.length}} Genes</div>
+                  {{cluster-download cluster=cluster}}
                   {{paper-icon "keyboard_arrow_up"}}
                 {{/expanded.header}}
 
