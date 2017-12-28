@@ -46,14 +46,14 @@ export default Route.extend({
 
     // Invoke the GOUtil function and wait to receive a 'run' model with the enrichment data
     this.set('clusters',params.clusters);
-    var request_url = config.host+'/api/v1/runs/invoke?'
-      + 'genes='    +  encodeURIComponent(params.geneids)
-      + '&pvalue='  +  encodeURIComponent(params.pvalue)
-      + '&clusters='+  encodeURIComponent(params.clusters)
-      + '&organism='+  encodeURIComponent(params.organism)
-      + '&background='+  encodeURIComponent(params.background);
-
-    Ember.$.getJSON(request_url).then(function(run){
+    var request_url = config.host+'/api/v1/runs/invoke'
+    // var request_url = config.host+'/api/v1/runs/invoke?'
+    //   + 'genes='    +  encodeURIComponent(params.geneids)
+    //   + '&pvalue='  +  encodeURIComponent(params.pvalue)
+    //   + '&clusters='+  encodeURIComponent(params.clusters)
+    //   + '&organism='+  encodeURIComponent(params.organism)
+    var data = {background: params.background, genes: params.geneids, pvalue: params.pvalue, clusters:params.clusters, organism: params.organism}
+    Ember.$.post(request_url, data).then(function(run){
       // console.log(run);
       // Total terms that will need to be loaded
       _this.set('termstoload', run.data.relationships.enrichments.data.length);

@@ -43,12 +43,10 @@ export default Controller.extend({
       this.set('pvaluethreshold',value);
     },
     backgroundFileChanged(file){
-      console.log("file", file);
       var reader = new FileReader();
       var _this = this;
       reader.onload = event => {
         var result = event.target.result;
-        console.log('background set to:', result);
         _this.set('background', result);
       }
       reader.readAsText(file.value);
