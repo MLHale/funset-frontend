@@ -23,6 +23,11 @@
             {{organism.name}}
           {{/paper-select}}
         </div>
+        {{frost-file-picker
+          accept='.txt,.text'
+          placeholderText="(optional) Add background genes - (one gene per line .txt)"
+          onChange=(action "backgroundFileChanged")
+        }}
         <div class="layout layout-align-center-center slider-container">
           <span style="margin-right: 16px; margin-left: 5px;">p-value threshold</span>
           {{paper-slider class="flex" min=0 max=100 discrete=true steps=2 value=pvalueslider onChange=(action "updatePValueSlider")}}

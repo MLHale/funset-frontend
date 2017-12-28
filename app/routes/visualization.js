@@ -15,6 +15,9 @@ export default Route.extend({
     },
     organism: {
       refreshModel: true
+    },
+    background: {
+      refreshModel: true
     }
   },
   termstoload: 0,
@@ -47,7 +50,8 @@ export default Route.extend({
       + 'genes='    +  encodeURIComponent(params.geneids)
       + '&pvalue='  +  encodeURIComponent(params.pvalue)
       + '&clusters='+  encodeURIComponent(params.clusters)
-      + '&organism='+  encodeURIComponent(params.organism);
+      + '&organism='+  encodeURIComponent(params.organism)
+      + '&background='+  encodeURIComponent(params.background);
 
     Ember.$.getJSON(request_url).then(function(run){
       // console.log(run);
