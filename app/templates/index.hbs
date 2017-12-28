@@ -9,9 +9,14 @@
       {{#card.content}}
         <div class="layout-row">
           <div class="layout-column flex">
-            {{paper-input textarea=true block=true label="Genes" value=genelist required=true onChange=(action (mut genelist)) customValidations=genelistValidation}}
+            {{paper-input textarea=true passThru=(hash rows=5 maxRows=15) block=true label="Genes" value=genelist required=true onChange=(action (mut genelist)) customValidations=genelistValidation}}
           </div>
         </div>
+        {{frost-file-picker
+          accept='.txt,.text'
+          placeholderText="(optional) select genes from file (one gene per line .txt)"
+          onChange=(action "inputgenesFileChanged")
+        }}
         <div class="layout layout-align-center-center">
           {{#paper-select
             class="flex"

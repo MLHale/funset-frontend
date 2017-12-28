@@ -42,6 +42,16 @@ export default Controller.extend({
       this.set('pvalueslider',value*100);
       this.set('pvaluethreshold',value);
     },
+    inputgenesFileChanged(file){
+      var reader = new FileReader();
+      var _this = this;
+      console.log('test')
+      reader.onload = event => {
+        var result = event.target.result;
+        _this.set('genelist', result.replace(new RegExp('\n', 'g'),','));
+      }
+      reader.readAsText(file.value);
+    },
     backgroundFileChanged(file){
       var reader = new FileReader();
       var _this = this;
