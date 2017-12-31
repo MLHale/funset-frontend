@@ -1,0 +1,115 @@
+<h3> 1. PURPOSE:</h3>
+
+<p> The FunSet webserver performs Gene Ontology (GO) enrichment analysis, identifying GO terms that are statistically overrepresented in a target set
+with respect to a background set. The enriched terms are displayed in a 2D plot that captures the semantic
+similarity between terms, with the option to cluster the terms and identify a representative term for each cluster.
+FunSet can be used interactively or programmatically, and allows users to download the enrichment results both in tabular form and in graphical form as SVG files or in data format as JSON. </p>
+
+<h3>2. INTERACTIVE USE:</h3>
+
+<h4>2a. Input:</h4>
+
+FunSet has a few required and optional parameters:
+<ul>
+  <li> Organism a choice, one of: 'Homo sapiens (human)', 'Gallus gallus (chicken)', 'Canis familiaris (dog)', 'Mus musculus (mouse)', 'Rattus norvegicus (rat)', 'Caenohabditis elegans (nematode)', 'Arabidopsis thaliana (thale cress)', 'Drosophila melanogaster (fruit fly)', 'Saccharomyces cerevisiae (budding yeast)', and 'Danio rerio (zebrafish)'. (Required) </li>
+  <li>A set of target genes. This may be added a comma separated list or uploaded as a file. (Required)</li>
+  <li>A set of background genes, uploaded as a file. (Optional) If no background set is provided, FunSet will use the whole set of annotated genes for the chosen organism. Both target and background set should be submitted either as a comma-separated list in the text boxes, or as a text file (one gene per line). The accepted format is HGNC symbol. </li>
+  <li>A False Discovery Rate threshold. (Optional). By default, FunSet sets the FDR
+  threshold to 0.05.</li>
+</ul>
+
+<h4>2b. Output:</h4>
+
+<p>The server performs the hypergeometric test to identify statistically enriched terms that pass the chosen FDR threshold. If the result set is not empty, FunSet displays the enriched terms as colored circles in 2D space, with a size that is proportional to the enrichment factor. The enrichment factor is calculated as the ratio between the observed number of genes annotated with a given term and the expected number of genes annotated with that term, assuming a uniform probability of annotation.
+
+The enriched terms are laid out in a 2D space according to their semantic similarity, with semantically related terms in close proximity to each other. This is accomplished by computing the semantic similarity between pairs of terms using the Lin index, and embedding the terms in 2D with Multidimensional Scaling (MDS).
+
+Once the results are loaded, users have the option to cluster terms using spectral clustering, and selecting the desidered number of clusters. The terms are colored by clusters, and labels for the representative terms (the cluster medoids) are displayed in the 2D plot.
+
+The plots can be downloaded as SVG files, and the enriched terms and the corresponding genes can be downloaded in tabular form.
+</p>
+
+<h4> 2c. API-level Access</h4>
+<p>The FunSet server is, at its core, a RESTful web service API. It allows users to not only interact with the data using the visualization interface discussed in 2b, but it also provides the raw enrichment and clustering data as JSON. The API is designed to the <a href="http://jsonapi.org/" target="_blank">http://jsonapi.org/</a> standard to facilitate ease of interaction.</p>
+
+<h5>API endpoints</h5>
+<p>The API is organized around a set of endpoints that can be invoked programmatically using a REST client, such as <a href="http://getpostman.com">POSTMAN</a>, or using any http command line tool, such as <a href="https://curl.haxx.se/">CURL</a>.
+
+The endpoints it provides are documented below. All are accessible without login.
+</p>
+<ul>
+  <li>
+    <strong>GET <em>/runs/&lt;primary key&gt;</em></strong>
+    <p> Returns the data from a previous run.</p>
+  </li>
+  <li>
+    <p><strong>POST <em>/runs/invoke</em> </strong>
+      Required POST Parameters (must be in submitted using <strong>application/x-www-form-urlencoded</strong> encoding)
+      genes=&lt;comma-seperated-list-of-target-genes&gt;
+      background=&lt;comma-seperated-list-of-background-genes&gt;
+      p-value=&lt;false detection rate [0-1]&gt;
+      clusters=&lt;desired number of clusters&gt;
+      organism=&lt;3-letter organism code ['hsa','gga','bta','cfa','mmu','rno','cel','ath','dme','sce','eco',or 'dre']&gt;
+    </p>
+    <p>This will run the enrichment analysis algorithms and return JSONAPI compatible JSON data that lists all of the enriched terms. To retrieve the data for each of the terms, you must request each enriched term as given below. </p>
+  </li>
+  <li>
+    <strong>GET <em>/runs/&lt;primary key&gt;/recluster?clusters=&lt;desired number of clusters&gt;</em> </strong>
+    <p>Returns the same data as /runs/invoke, but only re-runs the clustering algorithm for an existing run.</p>
+  </li>
+  <li>
+    <strong>GET <em>/enrichments/&lt;enrichment primary key&gt;?include=term,term.parents,genes</em></strong>
+    <p> Returns the enrichment term data and all submodels</p>
+  </li>
+  <li>
+    <strong>GET <em>/terms/&lt;term primary key&gt;</em></strong>
+    <p> Returns the GO term data for the term matching the primary key</p>
+  </li>
+  <li>
+    <strong>GET <em>/genes/&lt;gene primary key&gt;</em></strong>
+    <p> Returns the gene name for the gene matching the primary key</p>
+  </li>
+</ul>
+
+<h5> API Data Schema</h5>
+<strong>Gene</strong>
+<ul>
+  <li>id (int)</li>
+  <li>name (string)</li>
+</ul>
+<strong>Term</strong>
+<ul>
+  <li>id (int)</li>
+  <li>name (string)</li>
+  <li>termid (string, official GO id)</li>
+  <li>namespace (string)</li>
+  <li>description (string)</li>
+  <li>synonym (string)</li>
+  <li>parents (many-to-many)</li>
+
+</ul>
+<strong>Run</strong>
+<ul>
+  <li>id (int)</li>
+  <li>created (date)</li>
+  <li>ip (string, requestor's IP)</li>
+  <li>enrichements (one-to-many)</li>
+</ul>
+<strong>Enrichment</strong>
+<ul>
+  <li>id (int)</li>
+  <li>term (ForeignKey to associated GO Term)</li>
+  <li>pvalue (float - detection rate in sample)</li>
+  <li>level (float - enrichment level in sample)</li>
+  <li>semanticdissimilarityx (float - x position of term in graph scaled to [0-1])</li>
+  <li>semanticdissimilarityy (float - y position of term in graph scaled to [0-1])</li>
+  <li>cluster (int - the cluster to which the enriched term is assigned)</li>
+  <li>medoid (boolean - true if this term is the metoid of its cluster)</li>
+  <li>genes (one-to-many - all genes enriched in the sample)</li>
+
+</ul>
+
+<h4>3. CREDITS:</h4>
+
+<p>Matt Hale, Ishwor Thapa, and Dario Ghersi.<br>
+School of Interdisciplinary Informatics, University of Nebraska at Omaha, USA.</p>
