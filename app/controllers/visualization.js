@@ -95,27 +95,44 @@ export default Controller.extend({
   clusterslideractive: false,
   clusterslideractive: false,
   clusterfieldsubmitted: false,
-  updateClusters: Ember.observer("clusterslideractive", "clustersfieldactive", "clusterfieldsubmitted", function(value){
-    // console.log('updating clusters observer');
-    if(!this.get('clusterslideractive') || !this.get('clustersfieldactive') || this.get('clusterfieldsubmitted')){
-      this.set('clusterfieldsubmitted', false);
-      var clusters = this.get('route.clusters');
-      var _this = this;
-      var request_url = _this.get('route.host')+'/api/v1/runs/'+_this.get('route.run.id')+'/recluster?'
-        + 'clusters='+  encodeURIComponent(clusters);
-      Ember.$.getJSON(request_url).then(function(run){
-        // console.log(run);
-        run.data.type = 'run';//ember data expects raw JSONAPI data to be typed singular for push
-        // console.log('updating clusters ');
-        var loadedrun = _this.store.pushPayload(run);
-        // console.log('updated clusters ');
-        _this.get('renderEventQueue').addObject({type: 'refreshClusters'});
-        _this.set('refreshClusters',true);
-      });
-    }
-
-  }),
+  // updateClusters: Ember.observer("clusterslideractive", "clustersfieldactive", "clusterfieldsubmitted", function(value){
+  //   // console.log('updating clusters observer');
+  //   if(!this.get('clusterslideractive') || !this.get('clustersfieldactive') || this.get('clusterfieldsubmitted')){
+  //     this.set('clusterfieldsubmitted', false);
+  //     var clusters = this.get('route.clusters');
+  //     var _this = this;
+  //     var request_url = _this.get('route.host')+'/api/v1/runs/'+_this.get('route.run.id')+'/recluster?'
+  //       + 'clusters='+  encodeURIComponent(clusters);
+  //     Ember.$.getJSON(request_url).then(function(run){
+  //       // console.log(run);
+  //       run.data.type = 'run';//ember data expects raw JSONAPI data to be typed singular for push
+  //       // console.log('updating clusters ');
+  //       var loadedrun = _this.store.pushPayload(run);
+  //       // console.log('updated clusters ');
+  //       _this.get('renderEventQueue').addObject({type: 'refreshClusters'});
+  //       _this.set('refreshClusters',true);
+  //     });
+  //   }
+  //
+  // }),
   actions: {
+    updateClusters(){
+      // console.log('updating clusters observer');
+        var clusters = this.get('route.clusters');
+        var _this = this;
+        var request_url = _this.get('route.host')+'/api/v1/runs/'+_this.get('route.run.id')+'/recluster?'
+          + 'clusters='+  encodeURIComponent(clusters);
+        Ember.$.getJSON(request_url).then(function(run){
+          // console.log(run);
+          run.data.type = 'run';//ember data expects raw JSONAPI data to be typed singular for push
+          // console.log('updating clusters ');
+          var loadedrun = _this.store.pushPayload(run);
+          // console.log('updated clusters ');
+          _this.get('renderEventQueue').addObject({type: 'refreshClusters'});
+          _this.set('refreshClusters',true);
+        });
+
+    },
     clusterFieldSubmitted(){
       this.set('clusterfieldsubmitted', !this.get('clusterfieldsubmitted'));
     },

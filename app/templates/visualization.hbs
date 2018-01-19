@@ -14,7 +14,7 @@
               {{#link-to 'index'}}Return home to try other parameters.{{/link-to}}
             </div>
           {{else}}
-            <div class="loading-text">Fetching Data...</div>
+            <div class="loading-text">Calculating Enrichments and Clustering (this may take a few minutes) ...</div>
             {{paper-progress-circular warn=true diameter=180}}
           {{/if}}
         </div>
@@ -39,9 +39,8 @@
           <div class="layout layout-align-center-center slider-container graph-options-slider">
             <span style="margin-right: 16px;">Number of Clusters</span>
             {{paper-slider class="flex" discrete=true step=1 active=clusterslideractive min=1 max=route.termstoload value=route.clusters onChange=(action (mut route.clusters))}}
-            {{#paper-form onSubmit=(action "clusterFieldSubmitted") as |form|}}
-              {{form.input value=route.clusters focused=clustersfieldactive onChange=(action (mut route.clusters))}}
-            {{/paper-form}}
+            {{paper-input value=route.clusters class="flex-10 cluster-input-field" focused=clustersfieldactive onChange=(action (mut route.clusters))}}
+            {{#paper-button raised=true warn=true class="cluster-update-button" onClick=(action "updateClusters") }}Update Clusters{{/paper-button}}
           </div>
         {{#paper-item as |controls|}}
           <p>Show Term Labels?</p>
@@ -63,7 +62,7 @@
         {{/paper-item}}
       {{/paper-list}}
       {{#paper-list class="scrollabletermlist"}}
-        {{#paper-subheader}}Terms{{/paper-subheader}}
+        {{#paper-subheader}}Clusters: {{sortedNodeClusters.length}}{{/paper-subheader}}
           {{#each sortedNodeClusters as |cluster index|}}
             {{#paper-expansion-panel as |panel|}}
               {{#panel.collapsed}}
