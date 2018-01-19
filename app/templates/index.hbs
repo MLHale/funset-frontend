@@ -3,10 +3,13 @@
     {{#paper-card class="landing-page-card" as |card|}}
       {{#card.title as |title|}}
         {{#title.text as |text|}}
-          {{#text.headline}}Enrichment Visualization Parameters{{/text.headline}}
+          {{#text.headline}}FunSet Enrichment Visualization Parameters{{/text.headline}}
         {{/title.text}}
       {{/card.title}}
       {{#card.content}}
+        <div class="layout-row">
+          {{#paper-button raised=true warn=true class="flex-100" onClick=(action "populateExample")}}New to FunSet? Click here to prepopulate the fields with our example data. {{paper-icon "arrow_forward"}}{{/paper-button}}
+        </div>
         <div class="layout-row">
           <div class="layout-column flex">
             {{paper-input textarea=true passThru=(hash rows=5 maxRows=15) block=true label="Genes" value=genelist required=true onChange=(action (mut genelist)) customValidations=genelistValidation}}
@@ -60,7 +63,7 @@
       {{card.image class="landing-page-logo" src=(concat rootURL "/img/uno-lockup-logo.png") alt="pathway_viz" title="pathway_viz"}}
       {{#card.title as |title|}}
         {{#title.text as |text|}}
-          {{#text.headline}}Welcome to Pathway Enrichment Visualization App{{/text.headline}}
+          {{#text.headline}}Welcome to the FunSet Enrichment Visualization App{{/text.headline}}
           {{#text.subhead}}By Matt Hale, Dario Ghersi, and Ishwor Thapa{{/text.subhead}}
         {{/title.text}}
 

@@ -49,6 +49,7 @@ export default Controller.extend({
     }
     return loaded;
   }),
+
   /*
     Coalesces term and enrichment data to form nodes. Adds the nodes to the model to be used by the graph.
   */

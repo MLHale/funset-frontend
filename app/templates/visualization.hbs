@@ -8,6 +8,11 @@
           {{#if (gte percenttermsloaded 2)}}
             <div class="loading-text">Loading terms...</div>
             {{paper-progress-circular warn=true value=percenttermsloaded diameter=180}}
+          {{else if route.error}}
+            <div class="loading-text">
+              {{route.error}}
+              {{#link-to 'index'}}Return home to try other parameters.{{/link-to}}
+            </div>
           {{else}}
             <div class="loading-text">Fetching Data...</div>
             {{paper-progress-circular warn=true diameter=180}}
