@@ -61,6 +61,7 @@ export default Component.extend(ResizeAware,{
         else if (event.type === 'highlightcluster'){
           var node_objects= this.get('nodelayer').selectAll("circle").data(this.get('_nodes'), function(d) { return d.id;});
           var link_objects = this.get('linklayer').selectAll("line")
+          var text_objects = this.get('textlayer').selectAll("text")
           var cluster_text_objects = this.get('clusterlayer').selectAll("text")
 
           console.log('highlightcluster');
@@ -72,6 +73,9 @@ export default Component.extend(ResizeAware,{
 
           link_objects.filter(d=>{return !d.source.clusterselected})
             .style("opacity", "0.1")
+
+          text_objects.filter(d=>{return !d.clusterselected})
+              .style("opacity", "0.1")
 
           cluster_text_objects.filter(d=>{return !d.clusterselected})
             .style("opacity", "0.1")
@@ -85,6 +89,9 @@ export default Component.extend(ResizeAware,{
 
           cluster_text_objects.filter(d=>{return d.clusterselected})
             .style("opacity", "1")
+
+          text_objects.filter(d=>{return d.clusterselected})
+              .style("opacity", "1")
 
         }
         else if (event.type === 'dehighlightcluster'){

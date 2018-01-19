@@ -145,6 +145,7 @@ export default Controller.extend({
           node.clusterselected= false;
         });
         event.type = 'dehighlightcluster';
+        event.nodes = cluster.nodes
         this.get('renderEventQueue').addObject(event);
       }
       else {
