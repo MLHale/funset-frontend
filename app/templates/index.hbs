@@ -28,6 +28,17 @@
             {{organism.name}}
           {{/paper-select}}
         </div>
+        <div class="layout layout-align-center-center">
+          {{#paper-select
+            class="flex"
+            label="Namespace"
+            options=namespaceOptions
+            selected=namespaceselected
+            onChange=(action (mut namespaceselected))
+            as |namespace|}}
+            {{namespace.name}}
+          {{/paper-select}}
+        </div>
         {{frost-file-picker
           accept='.txt,.text'
           placeholderText="(optional) Add background genes - (one gene per line .txt)"

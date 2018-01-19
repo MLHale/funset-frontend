@@ -18,6 +18,10 @@ export default Route.extend({
     },
     background: {
       refreshModel: true
+    },
+    ,
+    namespace: {
+      refreshModel: true
     }
   },
   termstoload: 0,
@@ -52,7 +56,7 @@ export default Route.extend({
     //   + '&pvalue='  +  encodeURIComponent(params.pvalue)
     //   + '&clusters='+  encodeURIComponent(params.clusters)
     //   + '&organism='+  encodeURIComponent(params.organism)
-    var data = {background: params.background, genes: params.geneids, pvalue: params.pvalue, clusters:params.clusters, organism: params.organism}
+    var data = {background: params.background, genes: params.geneids, pvalue: params.pvalue, clusters:params.clusters, organism: params.organism, namespace: params.namespace};
     Ember.$.post(request_url, data).then(function(run){
       // console.log(run);
       // Total terms that will need to be loaded
