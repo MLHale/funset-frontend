@@ -1,8 +1,8 @@
 {
   "name": "pathway-viz-frontend",
-  "version": "0.0.0",
+  "version": "1.0.0",
   "private": true,
-  "description": "Small description for pathway-viz-frontend goes here",
+  "description": "Funset is a web-based BIOI tool for visualizing genetic pathway information.",
   "license": "MIT",
   "author": "",
   "directories": {
