@@ -4,7 +4,7 @@
  * @Email:  mlhale@unomaha.edu
  * @Filename: visualization.js
  * @Last modified by:   mlhale
- * @Last modified time: 2018-02-15T00:22:51-06:00
+ * @Last modified time: 2018-02-15T14:29:28-06:00
  * @License: Funset is a web-based BIOI tool for visualizing genetic pathway information. This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version. This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details. You should have received a copy of the GNU General Public License along with this program. If not, see http://www.gnu.org/licenses/.
  * @Copyright: Copyright (C) 2017 Matthew L. Hale, Dario Ghersi, Ishwor Thapa
  */
@@ -42,7 +42,7 @@ export default Controller.extend({
           node.enrichment.get('genes').forEach(gene=>genes.addObject(gene));
 
         });
-        clusters.addObject(Ember.Object.create({id:i, name: i, nodes: this.get('model').filterBy('enrichment.cluster', i).sortBy('enrichment.level').reverse(), genes: genes}));
+        clusters.addObject(Ember.Object.create({id:i, name: i, selected: true, nodes: this.get('model').filterBy('enrichment.cluster', i).sortBy('enrichment.level').reverse(), genes: genes}));
       }
       this.set('navigation.clusterjson', clusters);
     }
@@ -84,6 +84,7 @@ export default Controller.extend({
           enrichment: _this.store.peekRecord('enrichment',enrichment.get('id')),
           x: enrichment.get('semanticdissimilarityx') ? enrichment.get('semanticdissimilarityx')*scalefactor+center : center,
           y: enrichment.get('semanticdissimilarityy') ? enrichment.get('semanticdissimilarityy')*scalefactor+center : center,
+          clusterselected: true,
         });
       });
       this.set('refreshClusters', true);
@@ -108,33 +109,27 @@ export default Controller.extend({
   clusterslideractive: false,
   clusterslideractive: false,
   clusterfieldsubmitted: false,
-  // updateClusters: Ember.observer("clusterslideractive", "clustersfieldactive", "clusterfieldsubmitted", function(value){
-  //   // console.log('updating clusters observer');
-  //   if(!this.get('clusterslideractive') || !this.get('clustersfieldactive') || this.get('clusterfieldsubmitted')){
-  //     this.set('clusterfieldsubmitted', false);
-  //     var clusters = this.get('route.clusters');
-  //     var _this = this;
-  //     var request_url = _this.get('route.host')+'/api/v1/runs/'+_this.get('route.run.id')+'/recluster?'
-  //       + 'clusters='+  encodeURIComponent(clusters);
-  //     Ember.$.getJSON(request_url).then(function(run){
-  //       // console.log(run);
-  //       run.data.type = 'run';//ember data expects raw JSONAPI data to be typed singular for push
-  //       // console.log('updating clusters ');
-  //       var loadedrun = _this.store.pushPayload(run);
-  //       // console.log('updated clusters ');
-  //       _this.get('renderEventQueue').addObject({type: 'refreshClusters'});
-  //       _this.set('refreshClusters',true);
-  //     });
-  //   }
-  //
-  // }),
+  allclustersselected: true,
   actions: {
     updateClusters(){
       // console.log('updating clusters observer');
-        var clusters = this.get('route.clusters');
+        var num_clusters = this.get('route.clusters');
         var _this = this;
+        //reset all de-selected nodes
+        var clusters = this.get('sortedNodeClusters');
+        clusters.forEach(cluster=>{
+          cluster.set('selected',true);
+          cluster.nodes.forEach(node=>{
+            node.clusterselected = true;
+          });
+        });
+        var event = {type: 'showallclusters'};
+        this.get('renderEventQueue').addObject(event);
+
+        //retrieve new clusters
         var request_url = _this.get('route.host')+'/api/v1/runs/'+_this.get('route.run.id')+'/recluster?'
-          + 'clusters='+  encodeURIComponent(clusters);
+          + 'clusters='+  encodeURIComponent(num_clusters);
+
         Ember.$.getJSON(request_url).then(function(run){
           // console.log(run);
           run.data.type = 'run';//ember data expects raw JSONAPI data to be typed singular for push
@@ -149,6 +144,31 @@ export default Controller.extend({
     clusterFieldSubmitted(){
       this.set('clusterfieldsubmitted', !this.get('clusterfieldsubmitted'));
     },
+    toggleAllClustersSelected(){
+      var clusters = this.get('sortedNodeClusters');
+      if(this.get('allclustersselected')){
+        this.set('allclustersselected',false);
+        clusters.forEach(cluster=>{
+          cluster.set('selected',false);
+          cluster.nodes.forEach(node=>{
+            node.clusterselected = false;
+          });
+        });
+        var event = {type: 'hideallclusters'};
+        this.get('renderEventQueue').addObject(event);
+      }
+      else {
+        this.set('allclustersselected',true);
+        clusters.forEach(cluster=>{
+          cluster.set('selected',true);
+          cluster.nodes.forEach(node=>{
+            node.clusterselected = true;
+          });
+        });
+        var event = {type: 'showallclusters'};
+        this.get('renderEventQueue').addObject(event);
+      }
+    },
     toggleSelectedCluster(cluster){
       var _this = this;
       var event = {type: ''}
@@ -157,7 +177,7 @@ export default Controller.extend({
         cluster.nodes.forEach(node=>{
           node.clusterselected= false;
         });
-        event.type = 'dehighlightcluster';
+        event.type = 'hidecluster';
         event.nodes = cluster.nodes
         this.get('renderEventQueue').addObject(event);
       }
@@ -167,44 +187,12 @@ export default Controller.extend({
         cluster.nodes.forEach(node=>{
           node.clusterselected = true;
         });
-        event.type = 'highlightcluster';
+        event.type = 'showcluster';
         this.get('renderEventQueue').addObject(event);
       }
-      // var _this = this;
-      // var event = {type: ''}
-      // if (node.selected){
-      //   node.selected = false;
-      //   node.enrichment.set('selected', false);
-      //   event.type = 'deselectednode';
-      // }
-      // else {
-      //   node.selected = true;
-      //   node.enrichment.set('selected', true);
-      //   event.type = 'selectednode';
-      //   var width = Ember.$('.term-ontology-card').width();
-      //   var scalefactor = width;
-      //   var center = scalefactor/2;
-      //   this.get('renderEventQueue').addObject(event);
-      //   node.term.get('parents').forEach(function(parent){
-      //     _this.store.findRecord('term',parent.id).then(function(){
-      //       var term = _this.store.peekRecord('term',parent.id);
-      //       if(!_this.get('parentNodes').findBy('id',term.get('termid'))){
-      //         //check for duplicates before adding
-      //         var parentnode = {
-      //           id: term.get('termid'),
-      //           group: 'parent',
-      //           term: term,
-      //           enrichment: null,
-      //           x: term.get('semanticdissimilarityx') ? term.get('semanticdissimilarityx')*scalefactor+center : center,
-      //           y: term.get('semanticdissimilarityy') ? term.get('semanticdissimilarityy')*scalefactor+center : center,
-      //         };
-      //         _this.get('parentNodes').addObject(parentnode);
-      //         _this.get('renderEventQueue').addObject({type: 'addparent', node:parentnode, source:node});
-      //       }
-      //
-      //     });
-      //   });
-      // }
+      //check to see if allclustersselected should be true
+      this.set('allclustersselected',this.get('sortedNodeClusters').filter(cluster=>{return !cluster.get('selected')}).length===0)
+
     },
     /*
       Handle term selections by dispatching an event of a particular type to the underlying graph component
@@ -226,41 +214,6 @@ export default Controller.extend({
         event.node = node;
         this.get('renderEventQueue').addObject(event);
       }
-      // var _this = this;
-      // var event = {type: ''}
-      // if (node.selected){
-      //   node.selected = false;
-      //   node.enrichment.set('selected', false);
-      //   event.type = 'deselectednode';
-      // }
-      // else {
-      //   node.selected = true;
-      //   node.enrichment.set('selected', true);
-      //   event.type = 'selectednode';
-      //   var width = Ember.$('.term-ontology-card').width();
-      //   var scalefactor = width;
-      //   var center = scalefactor/2;
-      //   this.get('renderEventQueue').addObject(event);
-      //   node.term.get('parents').forEach(function(parent){
-      //     _this.store.findRecord('term',parent.id).then(function(){
-      //       var term = _this.store.peekRecord('term',parent.id);
-      //       if(!_this.get('parentNodes').findBy('id',term.get('termid'))){
-      //         //check for duplicates before adding
-      //         var parentnode = {
-      //           id: term.get('termid'),
-      //           group: 'parent',
-      //           term: term,
-      //           enrichment: null,
-      //           x: term.get('semanticdissimilarityx') ? term.get('semanticdissimilarityx')*scalefactor+center : center,
-      //           y: term.get('semanticdissimilarityy') ? term.get('semanticdissimilarityy')*scalefactor+center : center,
-      //         };
-      //         _this.get('parentNodes').addObject(parentnode);
-      //         _this.get('renderEventQueue').addObject({type: 'addparent', node:parentnode, source:node});
-      //       }
-      //
-      //     });
-      //   });
-      // }
     }
   }
 });

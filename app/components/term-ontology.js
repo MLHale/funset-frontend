@@ -4,7 +4,7 @@
  * @Email:  mlhale@unomaha.edu
  * @Filename: term-ontology.js
  * @Last modified by:   mlhale
- * @Last modified time: 2018-02-15T00:22:43-06:00
+ * @Last modified time: 2018-02-15T14:19:35-06:00
  * @License: Funset is a web-based BIOI tool for visualizing genetic pathway information. This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version. This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details. You should have received a copy of the GNU General Public License along with this program. If not, see http://www.gnu.org/licenses/.
  * @Copyright: Copyright (C) 2017 Matthew L. Hale, Dario Ghersi, Ishwor Thapa
  */
@@ -52,9 +52,12 @@ export default Component.extend(ResizeAware,{
     // console.log('renderQueue invoked',event);
     if(event){
       if(renderEventQueue.get('length')>0&&event.type!==null){
+        var node_objects= this.get('nodelayer').selectAll("circle").data(this.get('_nodes'), function(d) { return d.id;});
+        var link_objects = this.get('linklayer').selectAll("line")
+        var text_objects = this.get('textlayer').selectAll("text")
+        var cluster_text_objects = this.get('clusterlayer').selectAll("text")
         if (event.type === 'selectednode'){
           console.log('selectednode');
-          var node_objects= this.get('nodelayer').selectAll("circle").data(this.get('_nodes'), function(d) { return d.id;});
 
           //update all selected items
           node_objects.filter(d=>{return d.selected})
@@ -63,7 +66,6 @@ export default Component.extend(ResizeAware,{
             .style("stroke-width", "6px");
         }
         else if (event.type === 'deselectednode'){
-          var node_objects= this.get('nodelayer').selectAll("circle").data(this.get('_nodes'), function(d) { return d.id;});
           console.log('deselectednode');
           //update all deselected items
           node_objects.filter(d=>{return !d.selected})
@@ -71,16 +73,10 @@ export default Component.extend(ResizeAware,{
             .style("stroke", "black")
             .style("stroke-width", "3px");
         }
-        else if (event.type === 'highlightcluster'){
-          var node_objects= this.get('nodelayer').selectAll("circle").data(this.get('_nodes'), function(d) { return d.id;});
-          var link_objects = this.get('linklayer').selectAll("line")
-          var text_objects = this.get('textlayer').selectAll("text")
-          var cluster_text_objects = this.get('clusterlayer').selectAll("text")
+        else if (event.type === 'hidecluster'){
+          console.log('hidecluster');
 
-          console.log('highlightcluster');
-          //update all deselected items
-
-          //dimish non-selected items
+          //dimish unselected items
           node_objects.filter(d=>{return !d.clusterselected})
             .style("opacity", "0.1")
 
@@ -93,32 +89,37 @@ export default Component.extend(ResizeAware,{
           cluster_text_objects.filter(d=>{return !d.clusterselected})
             .style("opacity", "0.1")
 
-          //highlight selected items if they are currently diminished
+        }
+        else if (event.type === 'showcluster'){
+          console.log('showcluster');
+
+          //emphasize all selected items
           node_objects.filter(d=>{return d.clusterselected})
             .style("opacity", "1")
 
           link_objects.filter(d=>{return d.source.clusterselected})
-            .style("opacity", "1")
-
-          cluster_text_objects.filter(d=>{return d.clusterselected})
-            .style("opacity", "1")
+            .style("opacity", "1");
 
           text_objects.filter(d=>{return d.clusterselected})
               .style("opacity", "1")
 
+          cluster_text_objects.filter(d=>{return d.clusterselected})
+            .style("opacity", "1")
         }
-        else if (event.type === 'dehighlightcluster'){
-          var node_objects= this.get('nodelayer').selectAll("circle").data(this.get('_nodes'), function(d) { return d.id;});
-          console.log('dehighlightcluster');
-          //update all deselected items
-          node_objects.filter(d=>{return !d.clusterselected})
-            .style("opacity", "1")
-          var link_objects = this.get('linklayer').selectAll("line")
-          link_objects.filter(d=>{return !d.source.clusterselected})
-            .style("opacity", "1");
-          var cluster_text_objects = this.get('clusterlayer').selectAll("text")
-          cluster_text_objects.filter(d=>{return !d.clusterselected})
-            .style("opacity", "1")
+        else if (event.type === 'showallclusters'){
+          console.log('showallclusters');
+          node_objects.style("opacity", "1")
+          link_objects.style("opacity", "1");
+          text_objects.style("opacity", "1")
+          cluster_text_objects.style("opacity", "1")
+        }
+        else if (event.type === 'hideallclusters'){
+          console.log('hideallclusters');
+          node_objects.style("opacity", "0.1")
+          link_objects.style("opacity", "0.1");
+          text_objects.style("opacity", "0.1")
+          cluster_text_objects.style("opacity", "0.1")
+
         }
         else if (event.type === 'refreshClusters'){
           // Update the simulation to refresh its data
