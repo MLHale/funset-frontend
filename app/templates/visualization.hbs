@@ -4,7 +4,7 @@
 @Email:  mlhale@unomaha.edu
 @Filename: visualization.hbs
 @Last modified by:   mlhale
-@Last modified time: 2018-02-15T14:55:45-06:00
+@Last modified time: 2018-02-15T15:34:29-06:00
 @License: Funset is a web-based BIOI tool for visualizing genetic pathway information. This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version. This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details. You should have received a copy of the GNU General Public License along with this program. If not, see http://www.gnu.org/licenses/.
 @Copyright: Copyright (C) 2017 Matthew L. Hale, Dario Ghersi, Ishwor Thapa
 -->
@@ -88,7 +88,7 @@
                 {{#panel.collapsed}}
                   {{#paper-checkbox value=cluster.selected onChange=(action "toggleSelectedCluster" cluster)}}
                   {{/paper-checkbox}}
-                  <div class="md-panel-title">Cluster {{cluster.name}}</div>
+                  <div class="md-panel-title">Cluster #{{cluster.name}}</div>
                   <div class="md-panel-summary">{{cluster.nodes.length}} Terms / {{cluster.genes.length}} Genes</div>
                   {{paper-icon "keyboard_arrow_down"}}
                 {{/panel.collapsed}}
@@ -97,7 +97,7 @@
                   {{#expanded.header}}
                     {{#paper-checkbox value=cluster.selected onChange=(action "toggleSelectedCluster" cluster)}}
                     {{/paper-checkbox}}
-                    <div class="md-panel-title">Cluster {{cluster.name}}</div>
+                    <div class="md-panel-title">Cluster #{{cluster.name}}</div>
                     <div class="md-panel-summary">{{cluster.nodes.length}} Terms / {{cluster.genes.length}} Genes</div>
                     {{cluster-download cluster=cluster}}
                     {{paper-icon "keyboard_arrow_up"}}
@@ -126,7 +126,7 @@
                               {{/if}}
                               <div class="md-list-item-text">
                                 <h3>
-                                  <strong>{{node.term.termid}} [p={{node.enrichment.pvalue}},l={{node.enrichment.level}}]</strong>
+                                  <strong>{{#if node.enrichment.medoid}}(centroid){{/if}}{{node.term.termid}} [p={{node.enrichment.pvalue}},l={{node.enrichment.level}}]</strong>
                                 </h3>
                                 <h4>{{node.term.name}}</h4>
                                 <p>

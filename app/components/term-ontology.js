@@ -4,7 +4,7 @@
  * @Email:  mlhale@unomaha.edu
  * @Filename: term-ontology.js
  * @Last modified by:   mlhale
- * @Last modified time: 2018-02-15T14:19:35-06:00
+ * @Last modified time: 2018-02-15T15:31:37-06:00
  * @License: Funset is a web-based BIOI tool for visualizing genetic pathway information. This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version. This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details. You should have received a copy of the GNU General Public License along with this program. If not, see http://www.gnu.org/licenses/.
  * @Copyright: Copyright (C) 2017 Matthew L. Hale, Dario Ghersi, Ishwor Thapa
  */
@@ -64,6 +64,17 @@ export default Component.extend(ResizeAware,{
             .attr("class", function(d){return d.group + ' selected'})
             .style("stroke", "red")
             .style("stroke-width", "6px");
+
+          //add text labels for selected, non-medioid nodes
+          text_objects = text_objects.data(this.get('_nodes').filterBy('selected').filterBy('enrichment.medoid', false), function(d) { return d.id;});
+          var transform = d3.zoomTransform(d3.select(".zoom-layer").node());
+          text_objects.enter().append("svg:text")
+            .attr("x", function(d) { return d.x + (d.enrichment!=null ? d.enrichment.get('level')+5 : 13); })
+            .attr("y", function(d) { return d.y + (d.enrichment!=null ? d.enrichment.get('level')/2 : 4); })
+            .attr("transform", transform)
+            .text(function(d) { return d.id+ ' ('+d.term.get('shortname')+')'; });
+
+
         }
         else if (event.type === 'deselectednode'){
           console.log('deselectednode');
@@ -72,6 +83,10 @@ export default Component.extend(ResizeAware,{
             .attr("class", function(d){return d.group})
             .style("stroke", "black")
             .style("stroke-width", "3px");
+
+          text_objects = text_objects.data(this.get('_nodes').filterBy('selected'), function(d) { return d.id;});
+          var transform = d3.zoomTransform(d3.select(".zoom-layer").node());
+          text_objects.exit().remove();
         }
         else if (event.type === 'hidecluster'){
           console.log('hidecluster');
@@ -133,53 +148,6 @@ export default Component.extend(ResizeAware,{
           this.updateClusterLabels();
           this.get('simulation').alpha(.01).restart();
         }
-        else if (event.type === 'addlink'){
-          this.get('links').addObject({
-            source: event.source,
-            target: event.target,
-            type: event.linestyle,
-            value: 1
-          });
-        }
-        else if (event.type === 'addparent'){
-          if(!this.get('nodes').findBy('id',event.node.id)){//prevent duplicate nodes
-
-            var _this = this;
-            this.get('nodes').addObject(event.node);
-
-            // Update the simulation to refresh its data
-            this.get('simulation').nodes(this.get('_nodes'));
-            var transform = d3.zoomTransform(d3.select(".zoom-layer").node());
-            var node_objects= this.get('nodelayer').selectAll("circle").data(this.get('_nodes'), function(d) { return d.id;});
-            node_objects.enter().append("circle").attr("r", function(d){return d.enrichment ? d.enrichment.get('level') : _this.get('noderadius')})
-                .attr("class", function(d){return d.selected ? d.group + ' selected' : d.group})
-                .attr("transform", transform);
-
-            //update text labels if enabled
-            this.updateTextLabels()
-          }
-
-          // Setup edges and draw them on the graph - attaching a new svg line for each edge
-          this.get('links').addObject({
-            source: event.source.id,
-            target: event.node.id,
-            type: 'dotted',
-            value: 1
-          });
-          var link_objects = this.get('linklayer').selectAll("line").data(this.get('_links'));
-          link_objects.enter().append("line")
-            .attr("class", function(d) { return "link " + d.type; })
-            .attr("marker-end", function(d) { return "url(#" + d.type + ")"; })
-            .attr("transform", transform);
-          this.updateLinkForces()
-
-          //ensure the graph is updated according to the current transform
-          this.get('nodelayer').selectAll('circle').attr("transform", transform);
-          this.get('linklayer').selectAll('line').attr("transform", transform);
-          this.get('simulation').alpha(.01).restart();
-
-
-        }
       }
     }
     renderEventQueue.popObject();
@@ -231,10 +199,10 @@ export default Component.extend(ResizeAware,{
       .attr("x", function(d) { return d.x + (d.enrichment!=null ? d.enrichment.get('level')+5 : 13); })
       .attr("y", function(d) { return d.y + (d.enrichment!=null ? d.enrichment.get('level')/2 : 4); })
       .attr("transform", transform)
-      .text(function(d) { return "Cluster "+ d.enrichment.get('cluster') + " medoid - "+d.id+ ' ('+d.term.get('name')+')'; })
+      .text(function(d) { return "#"+ d.enrichment.get('cluster') + " - "+d.id+ ' ('+d.term.get('shortname')+')'; })
         .attr("style", "font-size:200%;");
     cluster_text_objects.exit().remove();
-    cluster_text_objects.text(function(d) { return "Cluster "+ d.enrichment.get('cluster') + " medoid - "+d.id+ ' ('+d.term.get('name')+')'; })
+    cluster_text_objects.text(function(d) { return "#"+ d.enrichment.get('cluster') + " - "+d.id+ ' ('+d.term.get('shortname')+')'; })
       .attr("style", "font-size:200%;");
   },
   /*
