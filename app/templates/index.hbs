@@ -23,6 +23,17 @@
         <div class="layout layout-align-center-center">
           {{#paper-select
             class="flex"
+            label="Ontology Version"
+            options=model
+            selected=ontologyselected
+            onChange=(action (mut ontologyselected))
+            as |ontology|}}
+            {{ontology.description}}
+          {{/paper-select}}
+        </div>
+        <div class="layout layout-align-center-center">
+          {{#paper-select
+            class="flex"
             label="Organism"
             options=organismoptions
             selected=organismselected
