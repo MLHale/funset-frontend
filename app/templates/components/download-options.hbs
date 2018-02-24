@@ -4,6 +4,6 @@
 {{#paper-button raised=true onClick=(action "downloadJSON")}}
   {{paper-icon "file_download"}} JSON
 {{/paper-button}}
-{{#paper-button raised=true disabled=true}}
-  {{paper-icon "file_download"}} PNG
+{{#paper-button raised=true onClick=(action "downloadCSV")}}
+  {{paper-icon "file_download"}} CSV
 {{/paper-button}}

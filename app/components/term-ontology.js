@@ -3,8 +3,8 @@
  * @Date:   2018-02-14T23:03:42-06:00
  * @Email:  mlhale@unomaha.edu
  * @Filename: term-ontology.js
- * @Last modified by:   mlhale
- * @Last modified time: 2018-02-15T15:31:37-06:00
+ * @Last modified by:   matthale
+ * @Last modified time: 2018-02-24T01:23:09-06:00
  * @License: Funset is a web-based BIOI tool for visualizing genetic pathway information. This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version. This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details. You should have received a copy of the GNU General Public License along with this program. If not, see http://www.gnu.org/licenses/.
  * @Copyright: Copyright (C) 2017 Matthew L. Hale, Dario Ghersi, Ishwor Thapa
  */
@@ -58,6 +58,8 @@ export default Component.extend(ResizeAware,{
         var cluster_text_objects = this.get('clusterlayer').selectAll("text")
         if (event.type === 'selectednode'){
           console.log('selectednode');
+          event.node.selected = true;
+          event.node.enrichment.set('selected', true);
 
           //update all selected items
           node_objects.filter(d=>{return d.selected})
@@ -78,6 +80,8 @@ export default Component.extend(ResizeAware,{
         }
         else if (event.type === 'deselectednode'){
           console.log('deselectednode');
+          event.node.selected = false;
+          event.node.enrichment.set('selected', false);
           //update all deselected items
           node_objects.filter(d=>{return !d.selected})
             .attr("class", function(d){return d.group})
@@ -500,38 +504,17 @@ export default Component.extend(ResizeAware,{
     Handles 'click' events on nodes by toggling the selected flag on the data item and the css class. Should mirror the controller functionality.
   */
   clicked(d, i){
-    // var _this = this;
-    // var node = d;
-    // node.term.get('parents').forEach(function(parent){
-    //   _this.store.findRecord('term',parent.id).then(function(){
-    //     var term = _this.store.peekRecord('term',parent.id);
-    //     if(!_this.get('parentNodes').findBy('id',term.get('termid'))){//check for duplicates before adding
-    //       var width = Ember.$('.term-ontology-card').width();
-    //       var scalefactor = width;
-    //       var center = scalefactor/2;
-    //
-    //       // Add parent node to be loaded
-    //       var parentnode = {
-    //         id: term.get('termid'),
-    //         group: 'parent',
-    //         term: term,
-    //         enrichment: null,
-    //         x: term.get('semanticdissimilarityx') ? term.get('semanticdissimilarityx')*scalefactor+center : center,
-    //         y: term.get('semanticdissimilarityy') ? term.get('semanticdissimilarityy')*scalefactor+center : center,
-    //       };
-    //       _this.get('parentNodes').addObject(parentnode);
-    //
-    //       // Update graph using the render queue
-    //       _this.get('renderEventQueue').addObject({type: 'addparent', node:parentnode, source:node});
-    //     }
-    //
-    //   });
-    // });
-    //
-    // // Update state to reflect that the node is currently selected
-    // d.selected = d.selected ? false : true;
-    // d.enrichment.set('selected',!d.enrichment.get('selected'))
-    // this.get('nodelayer').selectAll("circle").attr("class", function(d){return d.selected ? d.group + ' selected' : d.group});
+    var event = {type: '', node: d};
+    if(d.selected){
+      event.type = 'deselectednode';
+    }
+    else {
+      event.type = 'selectednode';
+    }
+
+    // Update state to reflect that the node is currently selected
+
+    this.get('renderEventQueue').addObject(event);
   },
   /*
     Handles drag `start` events on nodes by logging starting position of the node d being acted upon by a d3 event.

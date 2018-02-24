@@ -32,6 +32,13 @@
         </div>
       {{else}}
         {{term-ontology nodes=model links=links parentNodes=parentNodes showTermLabels=showTermLabels linkForcesOn=linkForcesOn renderEventQueue=renderEventQueue}}
+        {{#if clustersloading}}
+          <div class="reclustering-text layout-row layout-align-center-center">
+
+            <div class="loading-text">Re-clustering ...</div>
+            {{paper-progress-circular warn=true diameter=180}}
+          </div>
+        {{/if}}
       {{/unless}}
     {{/card.content}}
   {{/paper-card}}
@@ -126,7 +133,7 @@
                               {{/if}}
                               <div class="md-list-item-text">
                                 <h3>
-                                  <strong>{{#if node.enrichment.medoid}}(centroid){{/if}}{{node.term.termid}} [p={{node.enrichment.pvalue}},l={{node.enrichment.level}}]</strong>
+                                  <strong>{{#if node.enrichment.medoid}}(centroid) {{/if}}{{node.term.termid}} [ES={{round node.enrichment.level decimals=3}}, FDR={{exponential-form node.enrichment.pvalue}},]</strong>
                                 </h3>
                                 <h4>{{node.term.name}}</h4>
                                 <p>

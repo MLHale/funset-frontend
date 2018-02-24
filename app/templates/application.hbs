@@ -13,11 +13,6 @@
             <span>Instructions for using this app</span>
 
           {{/content.menu-item}}
-          {{#content.menu-item onClick="openDialog"}}
-            {{paper-icon "info"}}
-            <span>About the authors</span>
-
-          {{/content.menu-item}}
           {{#each menuitems as |item|}}
             {{#content.menu-item onClick=(action "externalLink" item)}}
               {{paper-icon item.icon}}
@@ -33,18 +28,6 @@
       {{#each navigation.dynamicbuttons as |dynamicbutton|}}
         {{component dynamicbutton}}
       {{/each}}
-
-
-  {{!--
-      <h2>
-      {{#if auth.stored}}
-          {{auth.username}}{{#paper-button iconButton=true onClick=(action "toggleStored")}}{{paper-icon "person"}}{{/paper-button}}
-      {{else}}
-        {{paper-input label="Name" value=auth.username onChange=(action (mut auth.username)) onBlur=(action "login") class="name-entry-field"}}{{#paper-button iconButton=true onClick=(action "login")}}{{paper-icon "person"}}{{/paper-button}}
-      {{/if}}
-      </h2> --}}
-
-
     {{/paper-toolbar-tools}}
   {{/paper-toolbar}}
   {{#if showDialog}}
@@ -69,12 +52,14 @@
   <div class="footer layout-row layout-align-space-between-end">
     <div class="left-footer">
       <p class="credit">
-        © 2017 Drs. Matthew L. Hale &amp; Dario Ghersi
+        © 2017 <a href="http://faculty.ist.unomaha.edu/mhale/" target="_blank" style="color: inherit;"> Matthew L. Hale</a>, <a href="http://faculty.ist.unomaha.edu/dghersi/" target="_blank" style="color: inherit;">Dario Ghersi</a>, &amp; Ishwor Thapa
       </p>
     </div>
     <div class="center-footer">
     </div>
     <div class="right-footer">
+      <iframe src="https://ghbtns.com/github-btn.html?user=mlhale&repo=funset-enrichment-visualization&type=star&count=true&size=large" frameborder="0" scrolling="0" width="115px" height="30px"></iframe>
+      <a href="https://twitter.com/mlhale_?ref_src=twsrc%5Etfw" class="twitter-follow-button" data-size="large" data-show-screen-name="false" data-show-count="false">Follow @mlhale_</a><script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
     </div>
   </div>
 </div>

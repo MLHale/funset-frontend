@@ -3,8 +3,8 @@
  * @Date:   2018-02-14T23:03:42-06:00
  * @Email:  mlhale@unomaha.edu
  * @Filename: visualization.js
- * @Last modified by:   mlhale
- * @Last modified time: 2018-02-15T14:29:28-06:00
+ * @Last modified by:   matthale
+ * @Last modified time: 2018-02-24T01:24:05-06:00
  * @License: Funset is a web-based BIOI tool for visualizing genetic pathway information. This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version. This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details. You should have received a copy of the GNU General Public License along with this program. If not, see http://www.gnu.org/licenses/.
  * @Copyright: Copyright (C) 2017 Matthew L. Hale, Dario Ghersi, Ishwor Thapa
  */
@@ -113,32 +113,34 @@ export default Controller.extend({
   actions: {
     updateClusters(){
       // console.log('updating clusters observer');
-        var num_clusters = this.get('route.clusters');
-        var _this = this;
-        //reset all de-selected nodes
-        var clusters = this.get('sortedNodeClusters');
-        clusters.forEach(cluster=>{
-          cluster.set('selected',true);
-          cluster.nodes.forEach(node=>{
-            node.clusterselected = true;
-          });
+      this.set('clustersloading',true);
+      var num_clusters = this.get('route.clusters');
+      var _this = this;
+      //reset all de-selected nodes
+      var clusters = this.get('sortedNodeClusters');
+      clusters.forEach(cluster=>{
+        cluster.set('selected',true);
+        cluster.nodes.forEach(node=>{
+          node.clusterselected = true;
         });
-        var event = {type: 'showallclusters'};
-        this.get('renderEventQueue').addObject(event);
+      });
+      var event = {type: 'showallclusters'};
+      this.get('renderEventQueue').addObject(event);
 
-        //retrieve new clusters
-        var request_url = _this.get('route.host')+'/api/v1/runs/'+_this.get('route.run.id')+'/recluster?'
-          + 'clusters='+  encodeURIComponent(num_clusters);
+      //retrieve new clusters
+      var request_url = _this.get('route.host')+'/api/v1/runs/'+_this.get('route.run.id')+'/recluster?'
+        + 'clusters='+  encodeURIComponent(num_clusters);
 
-        Ember.$.getJSON(request_url).then(function(run){
-          // console.log(run);
-          run.data.type = 'run';//ember data expects raw JSONAPI data to be typed singular for push
-          // console.log('updating clusters ');
-          var loadedrun = _this.store.pushPayload(run);
-          // console.log('updated clusters ');
-          _this.get('renderEventQueue').addObject({type: 'refreshClusters'});
-          _this.set('refreshClusters',true);
-        });
+      Ember.$.getJSON(request_url).then(function(run){
+        // console.log(run);
+        run.data.type = 'run';//ember data expects raw JSONAPI data to be typed singular for push
+        // console.log('updating clusters ');
+        var loadedrun = _this.store.pushPayload(run);
+        // console.log('updated clusters ');
+        _this.get('renderEventQueue').addObject({type: 'refreshClusters'});
+        _this.set('refreshClusters',true);
+        _this.set('clustersloading',false);
+      });
 
     },
     clusterFieldSubmitted(){
@@ -199,21 +201,15 @@ export default Controller.extend({
     */
     toggleSelectedTerm(node){
       var _this = this;
-      var event = {type: ''}
+      var event = {type: ''};
       if (node.selected){
-        node.selected = false;
-        node.enrichment.set('selected', false);
         event.type = 'deselectednode';
-        event.node = node;
-        this.get('renderEventQueue').addObject(event);
       }
       else {
-        node.selected = true;
-        node.enrichment.set('selected', true);
         event.type = 'selectednode';
-        event.node = node;
-        this.get('renderEventQueue').addObject(event);
       }
+      event.node = node;
+      this.get('renderEventQueue').addObject(event);
     }
   }
 });
