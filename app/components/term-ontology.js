@@ -4,7 +4,7 @@
  * @Email:  mlhale@unomaha.edu
  * @Filename: term-ontology.js
  * @Last modified by:   matthale
- * @Last modified time: 2018-02-24T01:23:09-06:00
+ * @Last modified time: 2019-02-25T14:22:04-06:00
  * @License: Funset is a web-based BIOI tool for visualizing genetic pathway information. This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version. This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details. You should have received a copy of the GNU General Public License along with this program. If not, see http://www.gnu.org/licenses/.
  * @Copyright: Copyright (C) 2017 Matthew L. Hale, Dario Ghersi, Ishwor Thapa
  */
@@ -15,7 +15,11 @@ import Component from '@ember/component';
 
 // Import the D3 packages we want to use
 
-import Ember from 'ember'
+import ArrayProxy from '@ember/array/proxy';
+import { A } from '@ember/array';
+import { alias } from '@ember/object/computed';
+import { observer } from '@ember/object';
+import { scheduleOnce } from '@ember/runloop';
 import d3 from 'npm:d3'
 import ResizeAware from 'ember-resize/mixins/resize-aware';
 
@@ -35,17 +39,17 @@ export default Component.extend(ResizeAware,{
   showTermLabels: false,
   linkForcesOn: false,
 
-  nodes: Ember.ArrayProxy.create({content: Ember.A()}),
-  _nodes: Ember.computed.alias('nodes.content'),
-  links: Ember.ArrayProxy.create({content: Ember.A()}),
-  _links: Ember.computed.alias('links.content'),
+  nodes: ArrayProxy.create({content: A()}),
+  _nodes: alias('nodes.content'),
+  links: ArrayProxy.create({content: A()}),
+  _links: alias('links.content'),
 
-  renderEventQueue: Ember.ArrayProxy.create({content: Ember.A()}),
+  renderEventQueue: ArrayProxy.create({content: A()}),
   currentScaleFactorX: 1,
   currentScaleFactorY: 1,
 
   updating: false,
-  renderEventProcessor: Ember.observer('renderEventQueue','renderEventQueue.@each', function(){
+  renderEventProcessor: observer('renderEventQueue','renderEventQueue.@each', function(){
 
     var renderEventQueue = this.get('renderEventQueue');
     var event = renderEventQueue.get('firstObject');
@@ -57,7 +61,7 @@ export default Component.extend(ResizeAware,{
         var text_objects = this.get('textlayer').selectAll("text")
         var cluster_text_objects = this.get('clusterlayer').selectAll("text")
         if (event.type === 'selectednode'){
-          console.log('selectednode');
+          //console.log('selectednode');
           event.node.selected = true;
           event.node.enrichment.set('selected', true);
 
@@ -79,7 +83,7 @@ export default Component.extend(ResizeAware,{
 
         }
         else if (event.type === 'deselectednode'){
-          console.log('deselectednode');
+          //console.log('deselectednode');
           event.node.selected = false;
           event.node.enrichment.set('selected', false);
           //update all deselected items
@@ -93,7 +97,7 @@ export default Component.extend(ResizeAware,{
           text_objects.exit().remove();
         }
         else if (event.type === 'hidecluster'){
-          console.log('hidecluster');
+          //console.log('hidecluster');
 
           //dimish unselected items
           node_objects.filter(d=>{return !d.clusterselected})
@@ -110,7 +114,7 @@ export default Component.extend(ResizeAware,{
 
         }
         else if (event.type === 'showcluster'){
-          console.log('showcluster');
+          //console.log('showcluster');
 
           //emphasize all selected items
           node_objects.filter(d=>{return d.clusterselected})
@@ -126,14 +130,14 @@ export default Component.extend(ResizeAware,{
             .style("opacity", "1")
         }
         else if (event.type === 'showallclusters'){
-          console.log('showallclusters');
+          //console.log('showallclusters');
           node_objects.style("opacity", "1")
           link_objects.style("opacity", "1");
           text_objects.style("opacity", "1")
           cluster_text_objects.style("opacity", "1")
         }
         else if (event.type === 'hideallclusters'){
-          console.log('hideallclusters');
+          //console.log('hideallclusters');
           node_objects.style("opacity", "0.1")
           link_objects.style("opacity", "0.1");
           text_objects.style("opacity", "0.1")
@@ -143,7 +147,7 @@ export default Component.extend(ResizeAware,{
         else if (event.type === 'refreshClusters'){
           // Update the simulation to refresh its data
           var context = this;
-          console.log('refreshing clusters');
+          //console.log('refreshing clusters');
           var transform = d3.zoomTransform(d3.select(".zoom-layer").node());
           var node_objects= this.get('nodelayer').selectAll("circle").data(this.get('_nodes'), function(d) { return d.id;});
           node_objects.style("fill", function(d){return context.get('clusterColorOptions')[d.enrichment.get('cluster')]});
@@ -156,13 +160,13 @@ export default Component.extend(ResizeAware,{
     }
     renderEventQueue.popObject();
   }),
-  toggleLabels: Ember.observer('showTermLabels', function(){
+  toggleLabels: observer('showTermLabels', function(){
     if(!this.get('updating')) {
       this.updateTextLabels(this);
       // this.simulationticked(this);
     }
   }),
-  toggleLinkforce: Ember.observer('linkForcesOn', function(){
+  toggleLinkforce: observer('linkForcesOn', function(){
     if(!this.get('updating')) {
       this.updateLinkForces(this);
       this.get('simulation').alpha(.3).restart();
@@ -235,7 +239,7 @@ export default Component.extend(ResizeAware,{
   /*
     Resizes the component (and svg) when the window size changes
   */
-  didResize(event){
+  didResize(/*event*/){
     var svg = d3.select("svg");
     var width = this.set('width',this.$().parents('md-card-content').width());
     var height = this.set('height',this.$().parents('md-card-content').height());
@@ -336,7 +340,7 @@ export default Component.extend(ResizeAware,{
         .force("charge", d3.forceManyBody().strength(context.get('simulationrepulsiveforce')))
         // .force("center", d3.forceCenter(width / 2, height / 2))
         .velocityDecay(.45)
-        .on("tick", ()=> Ember.run.scheduleOnce('render', context, context.simulationticked));
+        .on("tick", ()=> scheduleOnce('render', context, context.simulationticked));
 
     this.set('simulation', simulation);
 
@@ -414,7 +418,7 @@ export default Component.extend(ResizeAware,{
     this.didResize()
 
     // Schedule a call to render the graph
-    Ember.run.scheduleOnce('render', this, this.renderGraph);
+    scheduleOnce('render', this, this.renderGraph);
   },
   /*
     Render the graph by updating each layer to reflect changes in the underlying bound data
@@ -425,7 +429,7 @@ export default Component.extend(ResizeAware,{
     // Retrieve SVG Layers
     var linklayer = this.get('linklayer');
     var nodelayer = this.get('nodelayer');
-    var clusterlayer = this.get('clusterlayer');
+    // var clusterlayer = this.get('clusterlayer');
     var simulation = this.get('simulation');
     simulation.stop();
     var graph = {nodes: this.get('_nodes'), links: this.get('_links')};
@@ -503,7 +507,7 @@ export default Component.extend(ResizeAware,{
   /*
     Handles 'click' events on nodes by toggling the selected flag on the data item and the css class. Should mirror the controller functionality.
   */
-  clicked(d, i){
+  clicked(d, /*i*/){
     var event = {type: '', node: d};
     if(d.selected){
       event.type = 'deselectednode';
@@ -520,7 +524,7 @@ export default Component.extend(ResizeAware,{
     Handles drag `start` events on nodes by logging starting position of the node d being acted upon by a d3 event.
     see https://github.com/d3/d3-force#simulation_nodes and https://github.com/d3/d3-drag#drag_on
   */
-  dragstarted (d, i) {
+  dragstarted (d, /*i*/) {
     if (!d3.event.active) this.get('simulation').alphaTarget(0.3).restart();
     d.fx = d.x;
     d.fy = d.y;
@@ -529,7 +533,7 @@ export default Component.extend(ResizeAware,{
     Handles `drag` events on nodes by updating the position of the node d being acted upon by a d3 event.
     see https://github.com/d3/d3-force#simulation_nodes and https://github.com/d3/d3-drag#drag_on
   */
-  dragged (d, i) {
+  dragged (d, /*i*/) {
     d.fx = d3.event.x;
     d.fy = d3.event.y;
   },
@@ -537,7 +541,7 @@ export default Component.extend(ResizeAware,{
     Handles drag `end` events on nodes by nullifying the temporary position of the node d being acted upon by a d3 event.
     see https://github.com/d3/d3-force#simulation_nodes and https://github.com/d3/d3-drag#drag_on
   */
-  dragended (d, i) {
+  dragended (d, /*i*/) {
     //clear effect (fx) params when the event ends
     if (!d3.event.active) this.get('simulation').alphaTarget(0);
     d.fx = null;

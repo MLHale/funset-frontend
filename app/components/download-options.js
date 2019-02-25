@@ -4,7 +4,7 @@
  * @Email:  mlhale@unomaha.edu
  * @Filename: download-options.js
  * @Last modified by:   matthale
- * @Last modified time: 2018-02-24T01:46:36-06:00
+ * @Last modified time: 2019-02-25T14:12:27-06:00
  * @License: Funset is a web-based BIOI tool for visualizing genetic pathway information. This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version. This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details. You should have received a copy of the GNU General Public License along with this program. If not, see http://www.gnu.org/licenses/.
  * @Copyright: Copyright (C) 2017 Matthew L. Hale, Dario Ghersi, Ishwor Thapa
  */
@@ -15,7 +15,7 @@ import Component from '@ember/component';
 import d3 from 'npm:d3';
 import config from '../config/environment';
 import FileSaverMixin from 'ember-cli-file-saver/mixins/file-saver';
-import Ember from 'ember';
+import $ from 'jquery';
 
 export default Component.extend(FileSaverMixin,{
   actions:{
@@ -28,7 +28,7 @@ export default Component.extend(FileSaverMixin,{
 
       var html = svg.node().parentNode.innerHTML;
 
-      var domhtml = Ember.$.parseHTML(html);
+      var domhtml = $.parseHTML(html);
 
       //remove zoom layer so it doesn't block the graph
       $('.zoom-layer',domhtml).remove();

@@ -4,7 +4,7 @@
  * @Email:  mlhale@unomaha.edu
  * @Filename: visualization.js
  * @Last modified by:   matthale
- * @Last modified time: 2018-02-24T01:24:05-06:00
+ * @Last modified time: 2019-02-25T14:42:02-06:00
  * @License: Funset is a web-based BIOI tool for visualizing genetic pathway information. This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version. This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details. You should have received a copy of the GNU General Public License along with this program. If not, see http://www.gnu.org/licenses/.
  * @Copyright: Copyright (C) 2017 Matthew L. Hale, Dario Ghersi, Ishwor Thapa
  */
@@ -12,7 +12,11 @@
 
 
 import Controller from '@ember/controller';
-import Ember from 'ember';
+import ArrayProxy from '@ember/array/proxy';
+import { A } from '@ember/array';
+import { computed, observer } from '@ember/object';
+import $ from 'jquery';
+import EmberObject from '@ember/object';
 
 export default Controller.extend({
   //toggles for graph options
@@ -20,29 +24,29 @@ export default Controller.extend({
   showTermLabels: false,
 
 
-  renderEventQueue: Ember.ArrayProxy.create({content: Ember.A()}), // Used to dispatch render events to the graph component
+  renderEventQueue: ArrayProxy.create({content: A()}), // Used to dispatch render events to the graph component
   /*
     Returns a sorted ArrayProxy based on the underlying model (nodes).
   */
-  sortedNodes: Ember.computed('model.@each', 'model.@each.selected', function(){
+  sortedNodes: computed('model.{@each,@each.selected}', function(){
     return this.get('model').filterBy('enrichment').sortBy('enrichment.level').reverse()
   }),
   refreshClusters: false,
 
-  sortedNodeClusters: Ember.ArrayProxy.create({content: Ember.A([])}),
-  sortedNodeClustersUpdater: Ember.observer('refreshClusters', function(){
+  sortedNodeClusters: ArrayProxy.create({content: A([])}),
+  sortedNodeClustersUpdater: observer('refreshClusters', function(){
     if(this.get('refreshClusters')){
       var clusters = this.get('sortedNodeClusters');
-      var clusterui = this.get('clusterui');
+      // var clusterui = this.get('clusterui');
       clusters.clear();
 
       for(var i=0; i<this.get("route.clusters"); i++){
-        var genes = Ember.ArrayProxy.create({content: Ember.A([])});
+        var genes = ArrayProxy.create({content: A([])});
         this.get('model').filterBy('enrichment.cluster', i).forEach(node =>{
           node.enrichment.get('genes').forEach(gene=>genes.addObject(gene));
 
         });
-        clusters.addObject(Ember.Object.create({id:i, name: i, selected: true, nodes: this.get('model').filterBy('enrichment.cluster', i).sortBy('enrichment.level').reverse(), genes: genes}));
+        clusters.addObject(EmberObject.create({id:i, name: i, selected: true, nodes: this.get('model').filterBy('enrichment.cluster', i).sortBy('enrichment.level').reverse(), genes: genes}));
       }
       this.set('navigation.clusterjson', clusters);
     }
@@ -50,12 +54,12 @@ export default Controller.extend({
   }),
 
 
-  links: Ember.ArrayProxy.create({content: Ember.A([])}), //links maintained by d3 term-ontology component
+  links: ArrayProxy.create({content: A([])}), //links maintained by d3 term-ontology component
 
   /*
     Returns the percentage of terms that have been loaded. Used to determine when loading is done
   */
-  percenttermsloaded: Ember.computed('route.termstoload', 'route.loadingqueue.@each', function(){
+  percenttermsloaded: computed('route.{termstoload,loadingqueue.@each}', function(){
     var loaded = 1;
     if (this.get('route.loadingqueue.length')>=1 && this.get('route.termstoload')>=1){
       loaded = Math.floor(this.get('route.loadingqueue.length')/this.get('route.termstoload')*100);
@@ -66,11 +70,11 @@ export default Controller.extend({
   /*
     Coalesces term and enrichment data to form nodes. Adds the nodes to the model to be used by the graph.
   */
-  prepareNodes: Ember.observer('percenttermsloaded', function(){
+  prepareNodes: observer('percenttermsloaded', function(){
     if (this.get('percenttermsloaded') === 100){
       //all terms have loaded
       var loadingqueue = this.get('route.loadingqueue');
-      var width = Ember.$('.term-ontology-card').width();
+      var width = $('.term-ontology-card').width();
       var scalefactor = width;
       var center = scalefactor/2;
       var _this = this;
@@ -104,9 +108,8 @@ export default Controller.extend({
       });
     }
   }),
-  parentNodes: Ember.ArrayProxy.create({content: Ember.A()}),
+  parentNodes: ArrayProxy.create({content: A()}),
   clusterdragging: false,
-  clusterslideractive: false,
   clusterslideractive: false,
   clusterfieldsubmitted: false,
   allclustersselected: true,
@@ -131,11 +134,11 @@ export default Controller.extend({
       var request_url = _this.get('route.host')+'/api/v1/runs/'+_this.get('route.run.id')+'/recluster?'
         + 'clusters='+  encodeURIComponent(num_clusters);
 
-      Ember.$.getJSON(request_url).then(function(run){
+      $.getJSON(request_url).then(function(run){
         // console.log(run);
         run.data.type = 'run';//ember data expects raw JSONAPI data to be typed singular for push
         // console.log('updating clusters ');
-        var loadedrun = _this.store.pushPayload(run);
+        _this.store.pushPayload(run); //loaded run data
         // console.log('updated clusters ');
         _this.get('renderEventQueue').addObject({type: 'refreshClusters'});
         _this.set('refreshClusters',true);
@@ -172,7 +175,6 @@ export default Controller.extend({
       }
     },
     toggleSelectedCluster(cluster){
-      var _this = this;
       var event = {type: ''}
       if (cluster.selected){
         cluster.set('selected', false);
@@ -184,7 +186,7 @@ export default Controller.extend({
         this.get('renderEventQueue').addObject(event);
       }
       else {
-        console.log(cluster);
+        // console.log(cluster);
         cluster.set('selected', true);
         cluster.nodes.forEach(node=>{
           node.clusterselected = true;
@@ -200,7 +202,6 @@ export default Controller.extend({
       Handle term selections by dispatching an event of a particular type to the underlying graph component
     */
     toggleSelectedTerm(node){
-      var _this = this;
       var event = {type: ''};
       if (node.selected){
         event.type = 'deselectednode';
