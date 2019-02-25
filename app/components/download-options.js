@@ -4,7 +4,7 @@
  * @Email:  mlhale@unomaha.edu
  * @Filename: download-options.js
  * @Last modified by:   matthale
- * @Last modified time: 2019-02-25T14:12:27-06:00
+ * @Last modified time: 2019-02-25T16:27:57-06:00
  * @License: Funset is a web-based BIOI tool for visualizing genetic pathway information. This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version. This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details. You should have received a copy of the GNU General Public License along with this program. If not, see http://www.gnu.org/licenses/.
  * @Copyright: Copyright (C) 2017 Matthew L. Hale, Dario Ghersi, Ishwor Thapa
  */
@@ -57,14 +57,25 @@ export default Component.extend(FileSaverMixin,{
             node.enrichment.get('semanticdissimilarityy'),
           ];
           // gather genes
-          cluster.genes.forEach((gene)=>{
-            line.push(gene.get('geneid'));
+          var genes = "";
+          node.enrichment.get('genes').forEach((gene)=>{
+            if(genes===""){
+              genes+=gene.get('geneid');
+            }
+            else{
+              genes+=" "+gene.get('geneid');
+            }
           });
+          line.push(genes);
           data.push(line);
         });
       });
-
-      this.get('csv').export(data, {fileName: config.host+"-csv-download.csv"});
+      const csvConfig = {
+        fileName: "funset-csv-download.csv",
+        separator: ',',
+        withSeparator: false
+      };
+      this.get('csv').export(data, csvConfig);
     }
   }
 });
