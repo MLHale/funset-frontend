@@ -126,23 +126,28 @@
                         {{/termsexpanded.header}}
                         {{#termsexpanded.content}}
                           {{#each cluster.nodes as |node|}}
-                            {{#paper-item class="md-3-line" onClick=(action "toggleSelectedTerm" node) as |controls|}}
+                            <h3 class="cluster-menu-offset-text"><strong>{{#if node.enrichment.medoid}}(centroid) {{/if}}<a class="cluster-menu-link-text" href="http://amigo.geneontology.org/amigo/term/{{node.term.termid}}" target="_blank">{{node.term.termid}}</a> &nbsp;[ES={{round node.enrichment.level decimals=3}}, FDR={{exponential-form node.enrichment.pvalue}}]</strong></h3>
+                            {{#paper-item class="md-3-line cluster-menu-term-item" onClick=(action "toggleSelectedTerm" node) as |controls|}}
                               {{#if node.enrichment.selected}}
                                 {{paper-icon "visibility_off" class=(concat "md-avatar-icon" (if node.enrichment.selected " term-selected"))}}
                               {{else}}
                                 {{paper-icon "visibility" class=(concat "md-avatar-icon" (if node.enrichment.selected " term-selected"))}}
                               {{/if}}
                               <div class="md-list-item-text">
-                                <h3>
-                                  <strong>{{#if node.enrichment.medoid}}(centroid) {{/if}}{{node.term.termid}} [ES={{round node.enrichment.level decimals=3}}, FDR={{exponential-form node.enrichment.pvalue}}]</strong>
-                                </h3>
-                                <h4>{{node.term.name}}</h4>
+                                <h4>
+                                  {{node.term.name}}
+                                </h4>
                                 <p>
-                                  {{node.term.description}}
-                                  Test list xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+                                  {{node.term.description}} 
                                 </p>
                               </div>
                             {{/paper-item}}
+                            <p class="cluster-menu-offset-text">
+                              Genes: 
+                              {{#each node.enrichment.genes as |gene|}}
+                                <a class="cluster-menu-link-text" href="https://www.ncbi.nlm.nih.gov/gene/?term={{gene.geneid}}" target="_blank">{{gene.geneid}}</a>
+                              {{/each}}
+                            </p>
                           {{/each}}
                         {{/termsexpanded.content}}
                       {{/termpanel.expanded}}
