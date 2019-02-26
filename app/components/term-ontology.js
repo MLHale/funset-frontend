@@ -4,7 +4,7 @@
  * @Email:  mlhale@unomaha.edu
  * @Filename: term-ontology.js
  * @Last modified by:   matthale
- * @Last modified time: 2019-02-25T14:22:04-06:00
+ * @Last modified time: 2019-02-26T11:35:46-06:00
  * @License: Funset is a web-based BIOI tool for visualizing genetic pathway information. This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version. This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details. You should have received a copy of the GNU General Public License along with this program. If not, see http://www.gnu.org/licenses/.
  * @Copyright: Copyright (C) 2017 Matthew L. Hale, Dario Ghersi, Ishwor Thapa
  */
@@ -19,7 +19,7 @@ import ArrayProxy from '@ember/array/proxy';
 import { A } from '@ember/array';
 import { alias } from '@ember/object/computed';
 import { observer } from '@ember/object';
-import { scheduleOnce } from '@ember/runloop';
+import { scheduleOnce, later } from '@ember/runloop';
 import d3 from 'npm:d3'
 import ResizeAware from 'ember-resize/mixins/resize-aware';
 
@@ -473,6 +473,30 @@ export default Component.extend(ResizeAware,{
 
     // Force the graph to update using tick function
     simulation.alpha(1).restart();
+    later(context, function() {
+      simulation.velocityDecay(1)
+    }, 2000);
+
+    // // create new scale ojects based on event
+    var transform = d3.zoomTransform(d3.select(".zoom-layer").node());
+    transform.k=0.3 //transform.k is the magic zoom number!
+    transform.x=300 //transform.x is the magic translation in x space
+    transform.y=300
+    var new_xScale = transform.rescaleX(this.get('xAxisScale'));
+    var new_yScale = transform.rescaleY(this.get('yAxisScale'));
+    this.set('currentScaleFactorX',transform.k)
+    this.set('currentScaleFactorY',transform.k);
+    
+    // Update axes to reflect the new scale
+    this.get('xaxislayer').call(this.get('xAxis').scale(new_xScale));
+    this.get('yaxislayer').call(this.get('yAxis').scale(new_yScale));
+    
+    // Transform each object in each layer to be zoomed according to the new scale
+    this.get('nodelayer').selectAll('circle').attr("transform", transform);
+    this.get('linklayer').selectAll('line').attr("transform", transform);
+    this.get('textlayer').selectAll('text').attr("transform", transform);
+    this.get('clusterlayer').selectAll('text').attr("transform", transform);
+    
   },
   /*
     Teardown component
@@ -491,6 +515,7 @@ export default Component.extend(ResizeAware,{
     // create new scale ojects based on event
     var new_xScale = d3.event.transform.rescaleX(this.get('xAxisScale'));
     var new_yScale = d3.event.transform.rescaleY(this.get('yAxisScale'));
+    
     this.set('currentScaleFactorX',d3.event.transform.k)
     this.set('currentScaleFactorY',d3.event.transform.k);
 
