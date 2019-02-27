@@ -4,7 +4,7 @@
  * @Email:  mlhale@unomaha.edu
  * @Filename: visualization.js
  * @Last modified by:   matthale
- * @Last modified time: 2019-02-25T14:42:02-06:00
+ * @Last modified time: 2019-02-26T18:00:56-06:00
  * @License: Funset is a web-based BIOI tool for visualizing genetic pathway information. This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version. This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details. You should have received a copy of the GNU General Public License along with this program. If not, see http://www.gnu.org/licenses/.
  * @Copyright: Copyright (C) 2017 Matthew L. Hale, Dario Ghersi, Ishwor Thapa
  */
@@ -17,6 +17,7 @@ import { A } from '@ember/array';
 import { computed, observer } from '@ember/object';
 import $ from 'jquery';
 import EmberObject from '@ember/object';
+import { scheduleOnce } from '@ember/runloop';
 
 export default Controller.extend({
   //toggles for graph options
@@ -35,6 +36,7 @@ export default Controller.extend({
 
   sortedNodeClusters: ArrayProxy.create({content: A([])}),
   sortedNodeClustersUpdater: observer('refreshClusters', function(){
+    // console.log('setting up clusters')
     if(this.get('refreshClusters')){
       var clusters = this.get('sortedNodeClusters');
       // var clusterui = this.get('clusterui');
@@ -50,9 +52,22 @@ export default Controller.extend({
       }
       this.set('navigation.clusterjson', clusters);
     }
+    
+    //update all panel status to track expansion of expansion panels
+    let panelstatus = this.get('expandedclusterpanels');
+    panelstatus.clear();
+    // console.log(panelstatus)
+    // console.log(this.get('sortedNodeClusters.length'))
+    for(var i=0; i<this.get('sortedNodeClusters.length'); i++){
+      // console.log(i)
+      panelstatus.addObject({"i":i,"value":false});//initialize panel expansion to collapsed
+    }
+    this.set('expandedclusterpanels',panelstatus);
+    // console.log(panelstatus)
+    // console.log(this.get('expandedclusterpanels.length'))
     this.set('refreshClusters',false);
   }),
-
+  expandedclusterpanels: ArrayProxy.create({content: A()}),
 
   links: ArrayProxy.create({content: A([])}), //links maintained by d3 term-ontology component
 
@@ -108,6 +123,9 @@ export default Controller.extend({
       });
     }
   }),
+  getPanel(index){
+    return this.get('expandedclusterpanels')[index]
+  },
   parentNodes: ArrayProxy.create({content: A()}),
   clusterdragging: false,
   clusterslideractive: false,
@@ -208,6 +226,9 @@ export default Controller.extend({
       }
       else {
         event.type = 'selectednode';
+        // scheduleOnce('actions', this, function(){
+        //   $('')
+        // })
       }
       event.node = node;
       this.get('renderEventQueue').addObject(event);

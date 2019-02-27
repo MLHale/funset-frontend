@@ -92,7 +92,8 @@
           {{/paper-subheader}}
 
             {{#each sortedNodeClusters as |cluster index|}}
-              {{#paper-expansion-panel as |panel|}}
+              {{log (get (concat "expandedclusterpanels.content" ".[" index ']' value)) }}
+              {{#paper-expansion-panel expanded=(get "expandedclusterpanels.content" (concat ".[" index ']' value)) as |panel|}}
                 {{#panel.collapsed}}
                   {{#paper-checkbox value=cluster.selected onChange=(action "toggleSelectedCluster" cluster)}}
                   {{/paper-checkbox}}

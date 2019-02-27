@@ -4,7 +4,7 @@
  * @Email:  mlhale@unomaha.edu
  * @Filename: term-ontology.js
  * @Last modified by:   matthale
- * @Last modified time: 2019-02-26T11:35:46-06:00
+ * @Last modified time: 2019-02-26T13:01:25-06:00
  * @License: Funset is a web-based BIOI tool for visualizing genetic pathway information. This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version. This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details. You should have received a copy of the GNU General Public License along with this program. If not, see http://www.gnu.org/licenses/.
  * @Copyright: Copyright (C) 2017 Matthew L. Hale, Dario Ghersi, Ishwor Thapa
  */
@@ -57,7 +57,7 @@ export default Component.extend(ResizeAware,{
     if(event){
       if(renderEventQueue.get('length')>0&&event.type!==null){
         var node_objects= this.get('nodelayer').selectAll("circle").data(this.get('_nodes'), function(d) { return d.id;});
-        var link_objects = this.get('linklayer').selectAll("line")
+        var link_objects = this.get('linklayer').selectAll("path")
         var text_objects = this.get('textlayer').selectAll("text")
         var cluster_text_objects = this.get('clusterlayer').selectAll("text")
         if (event.type === 'selectednode'){
@@ -296,11 +296,19 @@ export default Component.extend(ResizeAware,{
     Updates the position of each object in each layer as the simulation runs.
   */
   simulationticked(){
-    this.get('linklayer').selectAll('line').attr("x1", function(d) { return d.source.x; })
-        .attr("y1", function(d) { return d.source.y; })
-        .attr("x2", function(d) { return d.target.x; })
-        .attr("y2", function(d) { return d.target.y; });
-
+    this.get('linklayer').selectAll('path').attr("d", function(d) {
+          // console.log(d)
+          var dx = d.target.x - d.source.x,
+              dy = d.target.y - d.source.y,
+              dr = Math.sqrt(dx * dx + dy * dy)/4,
+              mx = d.source.x + dx,
+              my = d.source.y + dy;
+          return [
+            "M",d.source.x,d.source.y,
+            "A",dr,dr,0,0,1,mx,my,
+            "A",dr,dr,0,0,1,d.target.x,d.target.y
+          ].join(" ");
+        });
     this.get('nodelayer').selectAll("circle")
         .attr("cx", function(d) { return d.x;  })
         .attr("cy", function(d) { return d.y; });
@@ -328,7 +336,7 @@ export default Component.extend(ResizeAware,{
     var height = this.set('height',this.$().parents('md-card-content').height());
     var svg = d3.select("svg");
     svg.attr("width", this.get('width'));
-    svg.attr("height", this.get('width'));
+    svg.attr("height", this.get('height'));
 
     // setup zoom handler
     var zoom = d3.zoom().on("zoom", ()=>context.zoom(context));
@@ -354,19 +362,29 @@ export default Component.extend(ResizeAware,{
     // Layer for arrow heads on edges (markers)
     var markerlayer = this.set('markerlayer', svg.append("g").attr("class", "marker-layer"));
     //setup the marker layer (arrowheads)
-    var marker_objects = markerlayer.selectAll("marker").data(["dotted", "solid"]);
-    marker_objects.enter().append("marker")
+    // var marker_objects = markerlayer.selectAll("marker").data(["dotted", "solid"]);
+    // marker_objects.enter().append("marker")
+    //     .attr("id", String)
+    //     .attr("viewBox", "0 -5 10 10")
+    //     .attr("refX", 12)
+    //     .attr("markerWidth", 10)
+    //     .attr("markerHeight", 10)
+    //     .attr("orient", "auto")
+    //   .append("svg:path")
+    //     .attr("d", "M0,-5L10,0L0,5");
+    // 
+    
+    svg.append("svg:defs").selectAll("marker").data(["dotted", "solid"])
+      .enter().append("svg:marker")
         .attr("id", String)
         .attr("viewBox", "0 -5 10 10")
-        .attr("refX", 12)
-        .attr("markerWidth", 10)
-        .attr("markerHeight", 10)
+        .attr("refX", 5)
+        .attr("markerWidth", 6)
+        .attr("markerHeight", 6)
         .attr("orient", "auto")
       .append("svg:path")
         .attr("d", "M0,-5L10,0L0,5");
 
-    // Layer for edges in the graph
-    this.set('linklayer', svg.append("g").attr("class", "link-layer"));
 
     // Axes setup
     var xAxisScale = this.set('xAxisScale', d3.scaleLinear()
@@ -391,9 +409,13 @@ export default Component.extend(ResizeAware,{
       .attr("height", height)
       .call(zoom));
 
+    
+    // Layer for edges in the graph
+    this.set('linklayer', svg.append("g").attr("class", "link-layer"));
+      
     // Layer for nodes in the graph
     this.set('nodelayer', svg.append("g").attr("class", "node-layer"));
-
+    
     // Layer for nodes in the graph
     this.set('genenodelayer', svg.append("g").attr("class", "gene-node-layer"));
 
@@ -448,14 +470,15 @@ export default Component.extend(ResizeAware,{
         .style("stroke-width", "3px");
 
     // Setup edges and draw them on the graph - attaching a new svg line for each edge
-    var link_objects = linklayer.selectAll("line").data(graph.links);
-    link_objects.enter().append("line")
+    var link_objects = linklayer.selectAll("path").data(graph.links);
+    link_objects.enter().append("svg:path")
       .attr("class", function(d) { return "link " + d.type; })
       .style("stroke-dasharray", 5)
       .style("stroke", "aaa")
       .style("stroke-width", "1.5px")
-      .attr("marker-end", function(d) { return "url(#" + d.type + ")"; });
+      .attr("marker-mid", function(d) { return "url(#" + d.type + ")"; });
 
+    
     link_objects.exit().remove();
 
     //setup cluster labels
@@ -473,15 +496,17 @@ export default Component.extend(ResizeAware,{
 
     // Force the graph to update using tick function
     simulation.alpha(1).restart();
+    
+    // Force the graph to stop updating and then stop circles from acting gravitationally after initial easing
     later(context, function() {
       simulation.velocityDecay(1)
     }, 2000);
 
-    // // create new scale ojects based on event
+    // Set initial zoom to be fairly zoomed out
     var transform = d3.zoomTransform(d3.select(".zoom-layer").node());
     transform.k=0.3 //transform.k is the magic zoom number!
-    transform.x=300 //transform.x is the magic translation in x space
-    transform.y=300
+    transform.x=this.get('width')/3 //transform.x is the magic translation in x space
+    transform.y=this.get('height')/3
     var new_xScale = transform.rescaleX(this.get('xAxisScale'));
     var new_yScale = transform.rescaleY(this.get('yAxisScale'));
     this.set('currentScaleFactorX',transform.k)
@@ -493,7 +518,7 @@ export default Component.extend(ResizeAware,{
     
     // Transform each object in each layer to be zoomed according to the new scale
     this.get('nodelayer').selectAll('circle').attr("transform", transform);
-    this.get('linklayer').selectAll('line').attr("transform", transform);
+    this.get('linklayer').selectAll('path').attr("transform", transform);
     this.get('textlayer').selectAll('text').attr("transform", transform);
     this.get('clusterlayer').selectAll('text').attr("transform", transform);
     
@@ -525,7 +550,7 @@ export default Component.extend(ResizeAware,{
 
     // Transform each object in each layer to be zoomed according to the new scale
     this.get('nodelayer').selectAll('circle').attr("transform", d3.event.transform);
-    this.get('linklayer').selectAll('line').attr("transform", d3.event.transform);
+    this.get('linklayer').selectAll('path').attr("transform", d3.event.transform);
     this.get('textlayer').selectAll('text').attr("transform", d3.event.transform);
     this.get('clusterlayer').selectAll('text').attr("transform", d3.event.transform);
   },
