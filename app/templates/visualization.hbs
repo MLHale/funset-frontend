@@ -31,7 +31,7 @@
           {{/if}}
         </div>
       {{else}}
-        {{term-ontology nodes=model links=links parentNodes=parentNodes showTermLabels=showTermLabels linkForcesOn=linkForcesOn renderEventQueue=renderEventQueue}}
+        {{term-ontology nodes=model links=links parentNodes=parentNodes showTermLabels=showTermLabels linkForcesOn=linkForcesOn renderEventQueue=renderEventQueue expandedclusterpanels=expandedclusterpanels}}
         {{#if clustersloading}}
           <div class="reclustering-text layout-row layout-align-center-center">
 
@@ -54,7 +54,7 @@
           </h5>
         {{/paper-toolbar-tools}}
       {{/paper-toolbar}}
-      {{#paper-list}}
+      {{#paper-list  class="paperlist"}}
         {{#paper-subheader}}Graph options{{/paper-subheader}}
           <div class="layout layout-align-center-center slider-container graph-options-slider">
             <span style="margin-right: 16px;">Number of Clusters</span>
@@ -92,8 +92,7 @@
           {{/paper-subheader}}
 
             {{#each sortedNodeClusters as |cluster index|}}
-              {{log (get (concat "expandedclusterpanels.content" ".[" index ']' value)) }}
-              {{#paper-expansion-panel expanded=(get "expandedclusterpanels.content" (concat ".[" index ']' value)) as |panel|}}
+              {{#paper-expansion-panel expanded=(get (get expandedclusterpanels.content (concat index "")) "expanded") as |panel|}}
                 {{#panel.collapsed}}
                   {{#paper-checkbox value=cluster.selected onChange=(action "toggleSelectedCluster" cluster)}}
                   {{/paper-checkbox}}
@@ -115,7 +114,7 @@
                   {{#expanded.content}}
 
                     <!-- term sub Panel -->
-                    {{#paper-expansion-panel as |termpanel|}}
+                    {{#paper-expansion-panel expanded=(get (get expandedclusterpanels.content (concat index "")) "termsexpanded") as |termpanel|}}
                       {{#termpanel.collapsed}}
                         <div class="md-panel-summary"> Terms </div>
                         {{paper-icon "keyboard_arrow_down"}}
@@ -125,9 +124,9 @@
                           <div class="md-panel-summary"> Terms </div>
                           {{paper-icon "keyboard_arrow_down"}}
                         {{/termsexpanded.header}}
-                        {{#termsexpanded.content}}
+                        {{#termsexpanded.content class=(concat "cluster-" index)}}
                           {{#each cluster.nodes as |node|}}
-                            <h3 class="cluster-menu-offset-text-header"><strong>{{#if node.enrichment.medoid}}(centroid) {{/if}}<a class="cluster-menu-link-text" href="http://amigo.geneontology.org/amigo/term/{{node.term.termid}}" target="_blank">{{node.term.termid}}</a> &nbsp;[ES={{round node.enrichment.level decimals=3}}, FDR={{exponential-form node.enrichment.pvalue}}]</strong></h3>
+                            <h3 class="cluster-menu-offset-text-header"><strong>{{#if node.enrichment.medoid}}(centroid) {{/if}}<a id={{node.term.id}} class="cluster-menu-link-text" href="http://amigo.geneontology.org/amigo/term/{{node.term.termid}}" target="_blank">{{node.term.termid}}</a> &nbsp;[ES={{round node.enrichment.level decimals=3}}, FDR={{exponential-form node.enrichment.pvalue}}]</strong></h3>
                             {{#paper-item class="md-3-line cluster-menu-term-item" onClick=(action "toggleSelectedTerm" node) as |controls|}}
                               {{#if node.enrichment.selected}}
                                 {{paper-icon "visibility_off" class=(concat "md-avatar-icon" (if node.enrichment.selected " term-selected"))}}

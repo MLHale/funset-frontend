@@ -4,7 +4,7 @@
  * @Email:  mlhale@unomaha.edu
  * @Filename: visualization.js
  * @Last modified by:   matthale
- * @Last modified time: 2019-02-26T18:00:56-06:00
+ * @Last modified time: 2019-02-28T10:01:39-06:00
  * @License: Funset is a web-based BIOI tool for visualizing genetic pathway information. This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version. This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details. You should have received a copy of the GNU General Public License along with this program. If not, see http://www.gnu.org/licenses/.
  * @Copyright: Copyright (C) 2017 Matthew L. Hale, Dario Ghersi, Ishwor Thapa
  */
@@ -60,7 +60,7 @@ export default Controller.extend({
     // console.log(this.get('sortedNodeClusters.length'))
     for(var i=0; i<this.get('sortedNodeClusters.length'); i++){
       // console.log(i)
-      panelstatus.addObject({"i":i,"value":false});//initialize panel expansion to collapsed
+      panelstatus.addObject(EmberObject.create({"i":i,"expanded":false, "termsexpanded": false, "genesexpanded": false}));//initialize panel expansion to collapsed
     }
     this.set('expandedclusterpanels',panelstatus);
     // console.log(panelstatus)
@@ -220,12 +220,15 @@ export default Controller.extend({
       Handle term selections by dispatching an event of a particular type to the underlying graph component
     */
     toggleSelectedTerm(node){
+      console.log(node);
       var event = {type: ''};
       if (node.selected){
         event.type = 'deselectednode';
       }
       else {
         event.type = 'selectednode';
+        console.log(node);
+        // this.set('expandedclusterpanels.')
         // scheduleOnce('actions', this, function(){
         //   $('')
         // })
