@@ -126,7 +126,7 @@
                         {{/termsexpanded.header}}
                         {{#termsexpanded.content class=(concat "cluster-" index)}}
                           {{#each cluster.nodes as |node|}}
-                            <h3 class="cluster-menu-offset-text-header"><strong>{{#if node.enrichment.medoid}}(centroid) {{/if}}<a id={{node.term.id}} class="cluster-menu-link-text" href="http://amigo.geneontology.org/amigo/term/{{node.term.termid}}" target="_blank">{{node.term.termid}}</a> &nbsp;[ES={{round node.enrichment.level decimals=3}}, FDR={{exponential-form node.enrichment.pvalue}}]</strong></h3>
+                            <h3 class="cluster-menu-offset-text-header term-{{node.term.id}}"><strong>{{#if node.enrichment.medoid}}(centroid) {{/if}}<a id={{node.term.id}} class="cluster-menu-link-text" href="http://amigo.geneontology.org/amigo/term/{{node.term.termid}}" target="_blank">{{node.term.termid}}</a> &nbsp;[ES={{round node.enrichment.level decimals=3}}, FDR={{exponential-form node.enrichment.pvalue}}]</strong></h3>
                             {{#paper-item class="md-3-line cluster-menu-term-item" onClick=(action "toggleSelectedTerm" node) as |controls|}}
                               {{#if node.enrichment.selected}}
                                 {{paper-icon "visibility_off" class=(concat "md-avatar-icon" (if node.enrichment.selected " term-selected"))}}
