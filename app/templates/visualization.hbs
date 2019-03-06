@@ -56,6 +56,13 @@
       {{/paper-toolbar}}
       {{#paper-list  class="paperlist"}}
         {{#paper-subheader}}Graph options{{/paper-subheader}}
+          {{#if (eq percenttermsloaded 100)}}
+            <div class="layout graph-options-slider">
+              {{#paper-button class="reset-graph-button" raised=true warn=true onClick=(action "resetGraph")}}
+                <p>Reset graph to its starting configuration.</p>
+              {{/paper-button}}
+            </div>
+          {{/if}}
           <div class="layout layout-align-center-center slider-container graph-options-slider">
             <span style="margin-right: 16px;">Number of Clusters</span>
             {{paper-slider class="flex" discrete=true step=1 active=clusterslideractive min=1 max=route.termstoload value=route.clusters onChange=(action (mut route.clusters))}}

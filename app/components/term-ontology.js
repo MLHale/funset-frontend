@@ -3,8 +3,8 @@
  * @Date:   2018-02-14T23:03:42-06:00
  * @Email:  mlhale@unomaha.edu
  * @Filename: term-ontology.js
- * @Last modified by:   mlhale
- * @Last modified time: 2019-03-05T08:39:58-06:00
+ * @Last modified by:   matthale
+ * @Last modified time: 2019-03-06T00:39:32-06:00
  * @License: Funset is a web-based BIOI tool for visualizing genetic pathway information. This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version. This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details. You should have received a copy of the GNU General Public License along with this program. If not, see http://www.gnu.org/licenses/.
  * @Copyright: Copyright (C) 2017 Matthew L. Hale, Dario Ghersi, Ishwor Thapa
  */
@@ -65,18 +65,19 @@ export default Component.extend(ResizeAware,{
           event.node.selected = true;
           event.node.enrichment.set('selected', true);
           
-          //expand the cluster panel and term panel for this item and then scroll to the item on the right hand side menu
-          let clusterpanelstate = this.get('expandedclusterpanels.content')[event.node.enrichment.get('cluster')];
-          clusterpanelstate.set('expanded', true);
-          clusterpanelstate.set('termsexpanded', true);
-          scheduleOnce("afterRender", function(){
-            const target = ".term-"+event.node.term.id;
-            const menuHeight = 310;
-            const scrolltopos = $(target).offset().top - menuHeight;
-            const duration = 500; //ms
-            $('.scrollabletermlist').stop().animate({ scrollTop: scrolltopos }, duration);
-          });
-          
+          if(event.origin!="menu"){
+            //expand the cluster panel and term panel for this item and then scroll to the item on the right hand side menu
+            let clusterpanelstate = this.get('expandedclusterpanels.content')[event.node.enrichment.get('cluster')];
+            clusterpanelstate.set('expanded', true);
+            clusterpanelstate.set('termsexpanded', true);
+            scheduleOnce("afterRender", function(){
+              const target = ".term-"+event.node.term.id;
+              const menuHeight = 310;
+              const scrolltopos = $(target).offset().top - menuHeight;
+              const duration = 500; //ms
+              $('.scrollabletermlist').stop().animate({ scrollTop: scrolltopos }, duration);
+            });
+          }
     
           //update all selected items
           node_objects.filter(d=>{return d.selected})
@@ -148,6 +149,12 @@ export default Component.extend(ResizeAware,{
           link_objects.style("opacity", "1");
           text_objects.style("opacity", "1")
           cluster_text_objects.style("opacity", "1")
+        }
+        else if (event.type === 'resetGraph'){
+          node_objects.filter(d=>{ return d.dragged; })
+            .each(d=>{d.x = d.originx; d.y = d.originy});
+          // // this.get('simulation').alpha(.01).restart();
+          // // this.simulationticked(this);
         }
         else if (event.type === 'hideallclusters'){
           //console.log('hideallclusters');
@@ -589,6 +596,14 @@ export default Component.extend(ResizeAware,{
   */
   dragstarted (d, /*i*/) {
     if (!d3.event.active) this.get('simulation').alphaTarget(0.3).restart();
+    
+    //setup dragged flag on first move
+    if(!d.dragged){
+      d.dragged=true;
+      d.originx = d.x;
+      d.originy = d.y;
+    }
+    // console.log(d);
     d.fx = d.x;
     d.fy = d.y;
   },
