@@ -4,7 +4,7 @@
  * @Email:  mlhale@unomaha.edu
  * @Filename: index.js
  * @Last modified by:   matthale
- * @Last modified time: 2019-02-25T14:37:05-06:00
+ * @Last modified time: 2019-03-07T12:38:17-06:00
  * @License: Funset is a web-based BIOI tool for visualizing genetic pathway information. This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version. This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details. You should have received a copy of the GNU General Public License along with this program. If not, see http://www.gnu.org/licenses/.
  * @Copyright: Copyright (C) 2017 Matthew L. Hale, Dario Ghersi, Ishwor Thapa
  */
@@ -30,7 +30,7 @@ export default Controller.extend({
     {code: 'ath', name: 'Arabidopsis thaliana (thale cress)'},
     {code: 'dme', name: 'Drosophila melanogaster (fruit fly)'},
     {code: 'sce', name: 'Saccharomyces cerevisiae (budding yeast)'},
-    {code: 'eco', name: 'Escherichia coli'},
+    // {code: 'eco', name: 'Escherichia coli'},
     {code: 'dre', name: 'Danio rerio (zebrafish)'}
   ],
   background: '',
