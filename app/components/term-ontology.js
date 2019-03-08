@@ -4,7 +4,7 @@
  * @Email:  mlhale@unomaha.edu
  * @Filename: term-ontology.js
  * @Last modified by:   matthale
- * @Last modified time: 2019-03-07T23:34:18-06:00
+ * @Last modified time: 2019-03-08T00:21:55-06:00
  * @License: Funset is a web-based BIOI tool for visualizing genetic pathway information. This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version. This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details. You should have received a copy of the GNU General Public License along with this program. If not, see http://www.gnu.org/licenses/.
  * @Copyright: Copyright (C) 2017 Matthew L. Hale, Dario Ghersi, Ishwor Thapa
  */
@@ -22,6 +22,7 @@ import { observer } from '@ember/object';
 import { scheduleOnce, later } from '@ember/runloop';
 import d3 from 'npm:d3'
 import ResizeAware from 'ember-resize/mixins/resize-aware';
+import $ from 'jquery'
 
 export default Component.extend(ResizeAware,{
 
@@ -71,11 +72,16 @@ export default Component.extend(ResizeAware,{
             clusterpanelstate.set('expanded', true);
             clusterpanelstate.set('termsexpanded', true);
             scheduleOnce("afterRender", function(){
-              const target = ".term-"+event.node.term.id;
-              const menuHeight = 310;
-              const scrolltopos = $(target).offset().top - menuHeight;
-              const duration = 500; //ms
-              $('.scrollabletermlist').stop().animate({ scrollTop: scrolltopos }, duration);
+              $('.scrollabletermlist').stop().animate({ scrollTop: 0 }, 0, function(){
+                const target = ".term-"+event.node.term.id;
+                const menu_height = 383;
+                const scroll_to_pos = $(target).offset().top - menu_height;
+                const duration = 500; //ms
+                $('.scrollabletermlist').animate({ scrollTop: scroll_to_pos }, duration)
+              });
+              
+              
+
             });
           }
     
@@ -100,6 +106,23 @@ export default Component.extend(ResizeAware,{
           //console.log('deselectednode');
           event.node.selected = false;
           event.node.enrichment.set('selected', false);
+          
+          // if(event.origin!="menu"){
+          //   //expand the cluster panel and term panel for this item and then scroll to the item on the right hand side menu
+          //   let clusterpanelstate = this.get('expandedclusterpanels.content')[event.node.enrichment.get('cluster')];
+          //   clusterpanelstate.set('expanded', false);
+          //   clusterpanelstate.set('termsexpanded', false);
+          //   scheduleOnce("afterRender", function(){
+          //     const target = ".term-"+event.node.term.id;
+          //     const menu_height = 383;
+          //     let menu_curr_pos = $('.scrollabletermlist').scrollTop();
+          //     const scroll_to_pos = $(target).offset().top - menu_height;
+          //     console.log($('.scrollabletermlist').offset().top)
+          //     console.log(menu_curr_pos,$(target).offset().top,scroll_to_pos);
+          //     const duration = 500; //ms
+          //     $('.scrollabletermlist').stop().animate({ scrollTop: 0 }, 1).stop().animate({ scrollTop: scroll_to_pos }, duration);
+          //   });
+          // }
           //update all deselected items
           node_objects.filter(d=>{return !d.selected})
             .attr("class", function(d){return d.group})
@@ -317,15 +340,9 @@ export default Component.extend(ResizeAware,{
   */
   simulationticked(){
     this.get('linklayer').selectAll('path').attr("d", function(d) {
-          // console.log(d)
-          var dx = d.target.x - d.source.x,
-              dy = d.target.y - d.source.y,
-              dr = Math.sqrt(dx * dx + dy * dy)/4,
-              mx = d.source.x + dx,
-              my = d.source.y + dy;
           return [
             "M",d.source.x,d.source.y,
-            "A",100000,100000,0,0,0,mx,my,
+            "A",100000,100000,0,0,0,d.target.x,d.target.y,
             "A",100000,100000,0,0,0,d.target.x,d.target.y
           ].join(" ");
         });
