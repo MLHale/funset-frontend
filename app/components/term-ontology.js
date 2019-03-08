@@ -4,7 +4,7 @@
  * @Email:  mlhale@unomaha.edu
  * @Filename: term-ontology.js
  * @Last modified by:   matthale
- * @Last modified time: 2019-03-06T00:39:32-06:00
+ * @Last modified time: 2019-03-07T23:34:18-06:00
  * @License: Funset is a web-based BIOI tool for visualizing genetic pathway information. This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version. This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details. You should have received a copy of the GNU General Public License along with this program. If not, see http://www.gnu.org/licenses/.
  * @Copyright: Copyright (C) 2017 Matthew L. Hale, Dario Ghersi, Ishwor Thapa
  */
@@ -325,8 +325,8 @@ export default Component.extend(ResizeAware,{
               my = d.source.y + dy;
           return [
             "M",d.source.x,d.source.y,
-            "A",dr,dr,0,0,1,mx,my,
-            "A",dr,dr,0,0,1,d.target.x,d.target.y
+            "A",100000,100000,0,0,0,mx,my,
+            "A",100000,100000,0,0,0,d.target.x,d.target.y
           ].join(" ");
         });
     this.get('nodelayer').selectAll("circle")
