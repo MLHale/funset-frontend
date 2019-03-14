@@ -39,7 +39,7 @@
     "ember-d3": "~0.3.4",
     "ember-data": "~2.18.0",
     "ember-export-application-global": "^2.0.0",
-    "ember-frost-file-picker": "^9.0.0",
+    "ember-frost-file-picker": "^9.0.6",
     "ember-load-initializers": "^1.0.0",
     "ember-math-helpers": "^2.8.1",
     "ember-paper": "^1.0.0-beta.22",
