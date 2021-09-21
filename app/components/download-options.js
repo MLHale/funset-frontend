@@ -52,7 +52,7 @@ export default Component.extend(FileSaverMixin,{
             node.term.get('termid'),
             node.term.get('name'),
             node.enrichment.get('pvalue'),
-            Math.exp(node.enrichment.get('level')/10),
+            node.enrichment.get('level'),
             node.enrichment.get('semanticdissimilarityx'),
             node.enrichment.get('semanticdissimilarityy'),
           ];
