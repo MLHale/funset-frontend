@@ -21,7 +21,7 @@
     "d3": "~4.11.0",
     "ember-ajax": "^3.0.0",
     "ember-browserify": "^1.2.2",
-    "ember-cli": "~2.18.2",
+    "ember-cli": "~4.8.0",
     "ember-cli-app-version": "^3.0.0",
     "ember-cli-babel": "^6.6.0",
     "ember-cli-data-export": "^0.1.29",
